@@ -1,29 +1,29 @@
-# Kafka.Ksql.Linq 機能一覧（利用者向け）
+# Kafka.Ksql.Linq Feature Guide (User Edition)
 
-Kafka/KSQL を LINQ で扱う C# DSL を使いこなすための実践ガイドです。
-
----
-
-## コア機能
-
-### Entity モデルとアノテーション
-`[KsqlTopic]`, `[KsqlTimestamp]`, `[KsqlTable]` でトピックやテーブルを定義し、`Entity<T>()` でモデルを登録してスキーマを再利用する。
-
-### クエリ DSL
-`ToQuery` に `From/Join/Where/Select` を連鎖し、式木を KSQL クエリへ最適化して永続ビューを構築する。
-
-### メッセージ送受信 API
-`AddAsync` と `ForEachAsync` で送信と Push/Pull コンシュームを一元化し、バックプレッシャやリトライ、コミット戦略を設定できる。
-
-### DLQ とエラー処理
-`.OnError(ErrorAction.DLQ)` で処理失敗を DLQ へ送り、`ctx.Dlq.ForEachAsync` で死んだレコードを巡回する。
+This guide helps you master the C# DSL that lets you control Kafka/ksqlDB with LINQ.
 
 ---
 
-## 利用の流れ
+## Core capabilities
 
-### コンテキストを構築して開始する
-設定と Schema Registry URL を渡し、ログを有効化して `KsqlContextBuilder` でコンテキストを作成する。
+### Entity models and annotations
+Use `[KsqlTopic]`, `[KsqlTimestamp]`, and `[KsqlTable]` to define topics and tables, then register models with `Entity<T>()` so schemas can be reused.
+
+### Query DSL
+Chain `From/Join/Where/Select` inside `ToQuery` to build persistent views. The expression tree is optimized into KSQL statements.
+
+### Messaging API
+`AddAsync` and `ForEachAsync` unify send and push/pull consumption. Configure backpressure, retries, and commit strategies.
+
+### DLQ and error handling
+`.OnError(ErrorAction.DLQ)` routes failures to the DLQ. Inspect records via `ctx.Dlq.ForEachAsync`.
+
+---
+
+## Usage flow
+
+### Build the context
+Provide configuration and the Schema Registry URL, enable logging, and construct the context with `KsqlContextBuilder`.
 
 ```csharp
 var configuration = new ConfigurationBuilder()
@@ -39,8 +39,8 @@ var ctx = KsqlContextBuilder.Create()
   .BuildContext<MyAppContext>();
 ```
 
-### エンティティを定義して登録する
-`[KsqlTopic]` と `[KsqlTimestamp]` を付与し、`EventSet<T>` プロパティを公開してモデル登録する。
+### Define and register entities
+Annotate with `[KsqlTopic]` and `[KsqlTimestamp]`, expose `EventSet<T>` properties, and register them in the context.
 
 ```csharp
 [KsqlTopic("basic-produce-consume")]
@@ -60,7 +60,7 @@ public class HourlyCount
 
 public class MyAppContext : KsqlContext
 {
-  // 複数エンティティを公開可能
+  // expose multiple entities
   public EventSet<BasicMessage> BasicMessages { get; set; } = null!;
   public EventSet<AnotherEntity> AnotherEntities { get; set; } = null!;
   public EntitySet<OrderSummary> OrderSummaries { get; set; } = null!;
@@ -68,7 +68,7 @@ public class MyAppContext : KsqlContext
 }
 ```
 
-このモデルに対応する KSQL DDL は次のとおり。
+The matching KSQL DDL looks like this:
 
 ```sql
 CREATE STREAM BASICMESSAGE (
@@ -94,11 +94,11 @@ CREATE TABLE HOURLYCOUNT (
 );
 ```
 
-### メッセージを送受信する
-`AddAsync` で送信し、`ForEachAsync` で受信を確認する。
+### Send and receive messages
+Send with `AddAsync`, verify with `ForEachAsync`.
 
 ```csharp
-// 送信
+// Send
 await ctx.BasicMessages.AddAsync(new BasicMessage
 {
   Id = Random.Shared.Next(),
@@ -106,7 +106,7 @@ await ctx.BasicMessages.AddAsync(new BasicMessage
   Text = "Basic Flow"
 });
 
-// 受信
+// Receive
 await ctx.BasicMessages.ForEachAsync(async m =>
 {
   Console.WriteLine($"Consumed: {m.Text}");
@@ -114,7 +114,7 @@ await ctx.BasicMessages.ForEachAsync(async m =>
 });
 ```
 
-ヘッダーやメタデータを扱う例。`autoCommit: false` で手動コミットに切り替えられる。
+Handle headers and metadata; switch to manual commit with `autoCommit: false`.
 
 ```csharp
 var headers = new Dictionary<string, string> { ["source"] = "api" };
@@ -136,8 +136,8 @@ await ctx.BasicMessages.ForEachAsync(
   autoCommit: false);
 ```
 
-### ビューを定義してクエリする
-`ToQuery` に `From/Join/Where/Select` を連鎖させ、永続ビューを定義する。
+### Define views and query them
+Chain `From/Join/Where/Select` inside `ToQuery` to create persistent views.
 
 ```csharp
 modelBuilder.Entity<OrderSummary>().ToQuery(q => q
@@ -150,11 +150,11 @@ modelBuilder.Entity<OrderSummary>().ToQuery(q => q
     CustomerName = c.Name
   }));
 
-// クエリ実行
+// Query execution
 var summaries = await ctx.OrderSummaries.ToListAsync();
 ```
 
-このクエリは次の KSQL に変換される。
+The generated KSQL:
 
 ```sql
 CREATE TABLE ORDERSUMMARY AS
@@ -167,7 +167,7 @@ CREATE TABLE ORDERSUMMARY AS
   WHERE C.ISACTIVE = TRUE;
 ```
 
-ウィンドウと集計を組み合わせた例。
+Combine windows and aggregations:
 
 ```csharp
 modelBuilder.Entity<HourlyCount>().ToQuery(q => q
@@ -179,7 +179,7 @@ modelBuilder.Entity<HourlyCount>().ToQuery(q => q
 var counts = await ctx.HourlyCounts.ToListAsync();
 ```
 
-このクエリは次の KSQL に変換される。
+KSQL output:
 
 ```sql
 CREATE TABLE HOURLYCOUNT AS
@@ -191,8 +191,8 @@ CREATE TABLE HOURLYCOUNT AS
   GROUP BY EXTRACT(HOUR FROM CreatedAt);
 ```
 
-### 失敗を DLQ で追跡する
-`.OnError(ErrorAction.DLQ)` 付き `ForEachAsync` は処理中の例外を DLQ に転送し、DLQ ストリームは `ctx.Dlq.ForEachAsync` で巡回できる。
+### Track failures with the DLQ
+`.OnError(ErrorAction.DLQ)` forwards failures to the DLQ; read them with `ctx.Dlq.ForEachAsync`.
 
 ```csharp
 await ctx.BasicMessages
@@ -206,8 +206,8 @@ await ctx.Dlq.ForEachAsync(r =>
 });
 ```
 
-### テーブルを一覧取得する
-`ToListAsync` でテーブル内容を読み取り、結果はローカルキャッシュから提供される。
+### Enumerate tables
+`ToListAsync` reads table contents from the local cache.
 
 ```csharp
 var counts = await ctx.HourlyCounts.ToListAsync();
@@ -215,10 +215,10 @@ foreach (var c in counts)
   Console.WriteLine($"{c.Hour}: {c.Count}");
 ```
 
-## 拡張ポイント
+## Extensibility
 
-### DI とロギングを差し替える
-`IServiceCollection` にコンテキストを登録し、既存ロガーを流用する。
+### Replace DI and logging
+Register the context in `IServiceCollection` and reuse existing loggers.
 
 ```csharp
 var services = new ServiceCollection();
@@ -229,8 +229,8 @@ services.AddSingleton(sp =>
     .BuildContext<MyAppContext>());
 ```
 
-### バリデーションやタイムアウトを調整する
-スキーマ登録や検証の挙動を `ConfigureValidation` と `WithTimeouts` で制御する。
+### Adjust validation and timeouts
+Control schema registration and validation via `ConfigureValidation`; override timeouts with `WithTimeouts`.
 
 ```csharp
 var ctx = KsqlContextBuilder.Create()
@@ -240,22 +240,22 @@ var ctx = KsqlContextBuilder.Create()
   .BuildContext<MyAppContext>();
 ```
 
-## 運用・監視
-- **設定ファイル**: `BootstrapServers`・`SchemaRegistry.Url`・`KsqlDbUrl`・DLQ 設定を `appsettings.json` に集約する。
-- **メトリクス/ヘルスチェック**: プロデューサやコンシューマのレイテンシとエラーカウントを `ILogger` 経由で収集する。
-- **スキーマ管理**: Schema Registry の互換性モード (FORWARD/STRICT) を設定し、互換性を検証する。
-- **テスト**: コンテキストを In-Memory 実装に差し替え、ユニットテストを容易にする。
+## Operations and monitoring
+- **Configuration**: place `BootstrapServers`, `SchemaRegistry.Url`, `KsqlDbUrl`, and DLQ settings in `appsettings.json`.
+- **Metrics/health**: capture producer/consumer latency and error counts via `ILogger`.
+- **Schema governance**: set Schema Registry compatibility (FORWARD/STRICT) and verify compatibility.
+- **Testing**: swap the context with an in-memory implementation for unit tests.
 
 ---
 
-## 代表的なアノテーションと API
-- `[KsqlTopic]` / `[KsqlTimestamp]` / `[KsqlTable]`
+## Key annotations and APIs
+- `[KsqlTopic]`, `[KsqlTimestamp]`, `[KsqlTable]`
 - `Entity<T>()`, `ToQuery(...)`, `AddAsync`, `ForEachAsync`, `ToListAsync`, `ctx.Dlq.ForEachAsync`
 
 ---
 
-## 最小構成例 (appsettings.json)
-`BootstrapServers`・`SchemaRegistry.Url`・`KsqlDbUrl` を最低限記述する。
+## Minimal appsettings.json
+Record at least `BootstrapServers`, `SchemaRegistry.Url`, and `KsqlDbUrl`.
 
 ```json
 {
@@ -269,7 +269,7 @@ var ctx = KsqlContextBuilder.Create()
 }
 ```
 
-エンティティごとの Producer/Consumer/Topic 設定は `Streams` セクションで上書きできる。
+Override per-entity Producer/Consumer/Topic settings under `Streams`.
 
 ```json
 {
