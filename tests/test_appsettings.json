@@ -1,0 +1,13 @@
+{
+  "KsqlDsl": {
+    "Kafka": {
+      "BootstrapServers": "localhost:9092"
+    },
+    "Topics": {
+      "DefaultPartitions": 1
+    },
+    "SchemaRegistry": {
+      "Url": "http://localhost:8081"
+    }
+  }
+}

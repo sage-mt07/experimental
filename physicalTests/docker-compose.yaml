@@ -1,0 +1,114 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.10
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"    
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.10
+    depends_on:
+      - zookeeper
+    ports:
+      - "39092:39092"     # host access for tests
+    environment:
+      KAFKA_HEAP_OPTS: "-Xms1g -Xmx2g"
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Dual listeners: internal (29092) + host (39092)
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:39092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://127.0.0.1:39092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_MESSAGE_MAX_BYTES: 2147483647
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2147483647
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 2147483647
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 2147483647
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:7.4.10
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "18088:8088"
+    mem_limit: 6g
+    memswap_limit: 6g      
+    environment:
+      KSQL_CONFIG_DIR: "/etc/ksql"
+      KSQL_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:29092"
+      KSQL_LISTENERS: "http://0.0.0.0:8088"
+      KSQL_KSQL_SERVICE_ID: "ksql_service_1"
+      KSQL_KSQL_COMMAND_TOPIC_REPLICATION_FACTOR: "1"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: "1"
+      KSQL_KSQL_STREAMS_AUTO_OFFSET_RESET: "earliest"
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      KSQL_STREAMS_NUM_STREAM_THREADS: 2      
+      # GC settings (optimize pause time)
+      KSQL_HEAP_OPTS: "-Xms3g -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
+      # ksqlDBのメモリ関連設定
+      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "1073741824"  # 1GB
+      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "2000"
+      # RocksDBのメモリ設定
+      KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"  
+      # Logging: reduce verbosity for performance
+      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
+      # KSQL_LOG4J_LOGGERS removed to avoid DEBUG noise
+      # Query timeout tuning
+      KSQL_KSQL_QUERY_TIMEOUT_MS: "300000"               # 5 minutes
+      KSQL_KSQL_QUERY_PULL_MAX_ALLOWED_OFFSET_LAG: "9223372036854775807"
+        
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.10
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "18081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_HEAP_OPTS: "-Xms512m -Xmx2g"
+
+
+
+  ksqldb-cli:
+    image: confluentinc/cp-ksqldb-cli:7.4.10
+    depends_on:
+      - ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
+
+  runner:
+    image: mcr.microsoft.com/dotnet/sdk:8.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+      ksqldb-server:
+        condition: service_started
+    working_dir: /src
+    volumes:
+      - ../:/src
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      KSQLDB_URL: http://ksqldb-server:8088
+    entrypoint: ["/bin/sh", "-lc", "set -e; echo waiting for services...; for i in $(seq 1 60); do if curl -fsS http://schema-registry:8081/subjects >/dev/null 2>&1 && curl -fsS http://ksqldb-server:8088/info >/dev/null 2>&1; then break; fi; sleep 2; done; dotnet test -c Release physicalTests/Kafka.Ksql.Linq.Tests.Integration.csproj --filter FullyQualifiedName~TimeBucketImportTumblingTests --logger 'trx;LogFileName=physical_runner.trx' --results-directory /src/reports/physical" ]

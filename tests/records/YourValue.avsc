@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "YourValue",
+  "namespace": "kafka_ksql_linq_tests_integration.records",
+  "fields": [
+    {
+      "name": "Price",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 18,
+        "scale": 2
+      }
+    }
+  ]
+}

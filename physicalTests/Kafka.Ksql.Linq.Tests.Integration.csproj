@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Kafka.Ksql.Linq.Tests.Integration</AssemblyName>
+    <RootNamespace>Kafka.Ksql.Linq.Tests.Integration</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+      <PackageReference Include="xunit" Version="2.6.6" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../src/Kafka.Ksql.Linq.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude samples that rely on unavailable runtime stubs or bring in obj files via wildcard -->
+    <Compile Remove="OssSamples/BarChartTimeBucketTests.cs" />
+    <Compile Remove="Runners/**/obj/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../tests/Common/CategoryAttribute.cs" Link="CategoryAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="docker-compose.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="../tools/docker-compose.kafka.yml">
+      <Link>tools/docker-compose.kafka.yml</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

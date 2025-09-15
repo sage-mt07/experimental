@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Kafka.Ksql.Linq</RootNamespace>
+    <AssemblyName>Kafka.Ksql.Linq</AssemblyName>
+    <!-- ✅ Enable nullable reference types -->
+    <Nullable>enable</Nullable>
+    <!-- ✅ Treat warnings as errors (improves development quality) -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- ✅ Keep nullable warnings as warnings (for phased migration) -->
+    <WarningsNotAsErrors>CS8600;CS8601;CS8602;CS8603;CS8618;CS8619;CS8620;CS8625</WarningsNotAsErrors>
+    <PackageId>Kafka.Ksql.Linq</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>synthaicode</Authors>
+    <Description>LINQ-style DSL for Kafka ksqlDB</Description>    
+    <PackageIcon>KsqlLinq-icon-128.png</PackageIcon>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kafka.Ksql.Linq.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Kafka.Ksql.Linq.Cache.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="SendOnly\**\*.cs" />
+    <Compile Remove="ReceiveOnly\**\*.cs" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Include="KsqlLinq-icon-128.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="2.10.1" />
+        <PackageReference Include="Confluent.SchemaRegistry" Version="2.10.1" />
+        <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.10.1" />
+        <PackageReference Include="Apache.Avro" Version="1.12.0" />
+        <PackageReference Include="Chr.Avro" Version="10.8.1" />
+        <PackageReference Include="Chr.Avro.Json" Version="10.8.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="8.0.17" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Telemetry" Version="9.0.0" />
+        <PackageReference Include="Streamiz.Kafka.Net" Version="1.7.1" />
+        <PackageReference Include="Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro" Version="1.7.1" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+        </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Query\Builders\Common\" />
+    <Folder Include="Query\Dsl\" />
+  </ItemGroup>
+</Project>

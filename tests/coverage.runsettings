@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <CodeCoverage>
+
+            <!-- Attributes to exclude -->
+            <ExcludeByAttribute>
+              <Attribute>GeneratedCodeAttribute</Attribute>
+              <Attribute>CompilerGeneratedAttribute</Attribute>
+              <Attribute>ExcludeFromCodeCoverageAttribute</Attribute>
+            </ExcludeByAttribute>
+
+            <!-- Classes or files to exclude -->
+            <Exclude>
+              <!-- Compiler-generated state machine (async/iterator) -->
+              <Class>*d__*</Class>
+              <Class>*DisplayClass*</Class>
+
+              <!-- Unused mocks or helper code -->
+              <Class>*Moq.*</Class>
+              <Class>*TestUtilities*</Class>
+
+              <!-- Assemblies excluded from tests (as needed) -->
+              <Module>*.Tests</Module>
+              <Module>*.TestHelpers</Module>
+            </Exclude>
+
+            <!-- Source folders to include in the exclusion list (optional) -->
+            <!--
+            <Include>
+              <Module>Kafka.Ksql.Linq</Module>
+            </Include>
+            -->
+
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
