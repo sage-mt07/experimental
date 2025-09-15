@@ -1,0 +1,13 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+COPY ./DailyComparisonLib/*.csproj ./DailyComparisonLib/
+COPY ./RateSender/*.csproj ./RateSender/
+RUN dotnet restore RateSender/RateSender.csproj
+COPY ./DailyComparisonLib ./DailyComparisonLib
+COPY ./RateSender ./RateSender
+RUN dotnet publish RateSender/RateSender.csproj -c Release -o /out
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /out .
+ENTRYPOINT ["dotnet", "RateSender.dll"]

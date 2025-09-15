@@ -1,0 +1,5 @@
+version: "3.8"
+services: {}
+
+# Stub file to satisfy test project copy.
+# The physical test environment uses physicalTests/docker-compose.yaml.
