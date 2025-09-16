@@ -59,12 +59,14 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
       KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      KSQL_STREAMS_NUM_STREAM_THREADS: 2      
+      KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 2
+      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "1000"
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: "1"
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: "1"
       # GC settings (optimize pause time)
       KSQL_HEAP_OPTS: "-Xms3g -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
       # ksqlDBのメモリ関連設定
       KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "0"          # disable cache for tests
-      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "500"
       # RocksDBのメモリ設定
       KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"  
       # Logging: reduce verbosity for performance

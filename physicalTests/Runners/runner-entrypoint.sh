@@ -1,46 +1,45 @@
 #!/bin/sh
 set -e
 
-wait_for_service() {
-  url="$1"; name="$2"; max_attempts=${3:-30}
-  i=0
-  while [ $i -lt $max_attempts ]; do
-    i=$((i+1))
-    if curl -fsS "$url" >/dev/null 2>&1; then
-      echo "$name is ready"
-      return 0
-    fi
-    sleep 2
-  done
-  echo "$name failed to start" >&2
-  return 1
-}
-
-# Basic healthchecks
-wait_for_service "http://schema-registry:8081/subjects" "Schema Registry" 60
-wait_for_service "http://ksqldb-server:8088/healthcheck" "ksqlDB Server" 90
-
-# ksqlDB internal state (3 consecutive OK)
+echo "Phase 1: Infrastructure readiness (5 consecutive OK)"
 consec=0
-i=0
-while [ $i -lt 60 ]; do
-  i=$((i+1))
-  resp=$(curl -fsS -H 'Content-Type: application/vnd.ksql+json' \
-         -d '{"ksql":"SHOW QUERIES;"}' \
-         http://ksqldb-server:8088/ksql 2>/dev/null || echo "")
-  if [ -n "$resp" ] && \
-     ! echo "$resp" | grep -qi "error\|exception" && \
-     echo "$resp" | grep -Eq '^[[:space:]]*\['; then
+for i in $(seq 1 150); do
+  if curl -fsS http://schema-registry:8081/subjects >/dev/null 2>&1 && \
+     curl -fsS http://ksqldb-server:8088/healthcheck >/dev/null 2>&1; then
     consec=$((consec+1))
-    [ $consec -ge 3 ] && break
   else
     consec=0
   fi
+  [ "$consec" -ge 5 ] && break
   sleep 2
 done
 
-# Minimal stabilization
-sleep 30
+echo "Phase 2: ksqlDB internal state (SHOW QUERIES, 5 consecutive OK)"
+consec=0
+for i in $(seq 1 60); do
+  body='{"ksql":"SHOW QUERIES;","streamsProperties":{}}'
+  resp=$(curl -fsS -H 'Content-Type: application/vnd.ksql+json' \
+         -d "$body" http://ksqldb-server:8088/ksql 2>/dev/null || echo "")
+  if [ -n "$resp" ] && \
+     ! echo "$resp" | grep -qi "error\|exception\|pending" && \
+     echo "$resp" | grep -Eq '^[[:space:]]*\['; then
+    consec=$((consec+1))
+  else
+    consec=0
+  fi
+  [ "$consec" -ge 5 ] && break
+  sleep 2
+done
+
+echo "Phase 3: Settling (45s)"
+sleep 45
+
+echo "Phase 4: Warmup (optional)"
+echo '{"ksql":"CREATE STREAM IF NOT EXISTS test_stream (k VARCHAR KEY, v VARCHAR) WITH (kafka_topic=\"__warmup__\", value_format=\"json\"); INSERT INTO test_stream VALUES (\"warmup\", \"test\");"}' | \
+curl -fsS -H 'Content-Type: application/vnd.ksql+json' -d @- \
+     http://ksqldb-server:8088/ksql >/dev/null 2>&1 || true
+sleep 10
+
 echo "ksqlDB is stable and ready for tests"
 
 # Keep the current default test selection
@@ -48,4 +47,3 @@ dotnet test -c Release /src/physicalTests/Kafka.Ksql.Linq.Tests.Integration.cspr
   --filter FullyQualifiedName~TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket \
   --logger 'trx;LogFileName=physical_runner.trx' \
   --results-directory /src/reports/physical
-
