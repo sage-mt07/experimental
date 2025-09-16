@@ -61,6 +61,7 @@ internal class DDLQueryGenerator : GeneratorBase, IDDLQueryGenerator
             var replicas = schema.Replicas;
 
             var withParts = new List<string> { $"KAFKA_TOPIC='{topicName}'" };
+            // Streams without key columns must not specify KEY_FORMAT
             if (hasKey)
             {
                 withParts.Add("KEY_FORMAT='AVRO'");
@@ -102,6 +103,7 @@ internal class DDLQueryGenerator : GeneratorBase, IDDLQueryGenerator
             var replicas = schema.Replicas;
 
             var withParts = new List<string> { $"KAFKA_TOPIC='{topicName}'" };
+            // TABLE は通常主キーを持つが、念のためキー定義がある場合のみ KEY_FORMAT を付与
             if (hasKey)
             {
                 withParts.Add("KEY_FORMAT='AVRO'");

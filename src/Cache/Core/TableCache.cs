@@ -39,32 +39,51 @@ internal class TableCache<T> : ITableCache<T> where T : class
     }
     public async Task<List<T>> ToListAsync(List<string>? filter = null, TimeSpan? timeout = null)
     {
-        await _waitUntilRunning(timeout);
+        var effectiveTimeout = timeout ?? TimeSpan.FromSeconds(90);
+        await _waitUntilRunning(effectiveTimeout);
         var mapping = _mappingRegistry is null ? null : _mappingRegistry.GetMapping(typeof(T));
 
         string? prefix = null;
         if (filter is { Count: > 0 })
             prefix = string.Join(KeySep, filter) + KeySep;
 
-        var list = new List<T>();
-        foreach (var (key, val) in _enumerateLazy.Value())
+        var deadline = DateTime.UtcNow + effectiveTimeout;
+        while (true)
         {
-            // Key is expected to be a string (stringified by the Streamiz side)
-            var keyStr = key as string
-                          ?? _testKeyStringifier?.Invoke(key)
-                          ?? key?.ToString();
-            if (keyStr == null)
-                continue;
+            var list = new List<T>();
+            try
+            {
+                foreach (var (key, val) in _enumerateLazy.Value())
+                {
+                    // Key is expected to be a string (stringified by the Streamiz side)
+                    var keyStr = key as string
+                                  ?? _testKeyStringifier?.Invoke(key)
+                                  ?? key?.ToString();
+                    if (keyStr == null)
+                        continue;
 
-            if (prefix != null && !keyStr.StartsWith(prefix, StringComparison.Ordinal))
-                continue;
+                    if (prefix != null && !keyStr.StartsWith(prefix, StringComparison.Ordinal))
+                        continue;
 
-            if (_testCombiner is not null)
-                list.Add((T)_testCombiner(keyStr, val, typeof(T)));
-            else
-                list.Add((T)mapping!.CombineFromStringKeyAndAvroValue(keyStr, val, typeof(T)));
+                    if (_testCombiner is not null)
+                        list.Add((T)_testCombiner(keyStr, val, typeof(T)));
+                    else
+                        list.Add((T)mapping!.CombineFromStringKeyAndAvroValue(keyStr, val, typeof(T)));
+                }
+                return list;
+            }
+            catch (Exception ex) when (
+                ex.GetType().FullName == "Streamiz.Kafka.Net.Errors.InvalidStateStoreException"
+                || (ex.Message?.IndexOf("may have migrated to another instance", StringComparison.OrdinalIgnoreCase) >= 0)
+                || (ex.Message?.IndexOf("PENDING_SHUTDOWN", StringComparison.OrdinalIgnoreCase) >= 0)
+            )
+            {
+                if (DateTime.UtcNow >= deadline)
+                    throw;
+                await Task.Delay(500);
+                continue;
+            }
         }
-        return list;
     }
 
     public void Dispose() { }

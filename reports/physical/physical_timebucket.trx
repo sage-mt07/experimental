@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c5991323-f687-428f-81ca-e8ea878b7514" name="@sagesoho01 2025-09-16 02:39:30" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-09-16T02:39:30.6181492+09:00" queuing="2025-09-16T02:39:30.6181493+09:00" start="2025-09-16T02:36:22.9053524+09:00" finish="2025-09-16T02:39:30.6234759+09:00" />
+  <TestSettings name="default" id="abce086f-77ea-4945-a1a9-c19734940f42">
+    <Deployment runDeploymentRoot="_sagesoho01_2025-09-16_02_39_30" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="60d41ffa-ea06-420c-92f6-1649755d29fb" testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" testName="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" computerName="sagesoho01" duration="00:02:50.7418007" startTime="2025-09-16T02:39:30.5322976+09:00" endTime="2025-09-16T02:39:30.5323096+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="60d41ffa-ea06-420c-92f6-1649755d29fb">
+      <Output>
+        <ErrorInfo>
+          <Message>System.TimeoutException : Kafka not reachable at 127.0.0.1:39092</Message>
+          <StackTrace>   at PhysicalTestEnv.Health.WaitForKafkaAsync(String bootstrapServers, Nullable`1 timeout) in /mnt/c/dev/experimental/physicalTests/Env/Health.cs:line 20
+   at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket() in /mnt/c/dev/experimental/physicalTests/OssSamples/TimeBucketImportTumblingTests.cs:line 124
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" storage="/mnt/c/dev/experimental/physicaltests/bin/release/net8.0/kafka.ksql.linq.tests.integration.dll" id="d4f95360-fa20-03e1-5810-a5fd78838e0d">
+      <Execution id="60d41ffa-ea06-420c-92f6-1649755d29fb" />
+      <TestMethod codeBase="/mnt/c/dev/experimental/physicalTests/bin/Release/net8.0/Kafka.Ksql.Linq.Tests.Integration.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests" name="Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" executionId="60d41ffa-ea06-420c-92f6-1649755d29fb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.6+bf9b858c26 (64-bit .NET 8.0.19)
+[xUnit.net 00:00:00.75]   Discovering: Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.80]   Discovered:  Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.81]   Starting:    Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:02:51.60]       System.TimeoutException : Kafka not reachable at 127.0.0.1:39092
+[xUnit.net 00:02:51.60]       Stack Trace:
+[xUnit.net 00:02:51.60]         /mnt/c/dev/experimental/physicalTests/Env/Health.cs(20,0): at PhysicalTestEnv.Health.WaitForKafkaAsync(String bootstrapServers, Nullable`1 timeout)
+[xUnit.net 00:02:51.60]         /mnt/c/dev/experimental/physicalTests/OssSamples/TimeBucketImportTumblingTests.cs(124,0): at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()
+[xUnit.net 00:02:51.60]         --- End of stack trace from previous location ---
+[xUnit.net 00:02:51.60]   Finished:    Kafka.Ksql.Linq.Tests.Integration
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="sagesoho01" outcome="Error" timestamp="2025-09-16T02:39:30.5316843+09:00">
+        <Text>[xUnit.net 00:02:51.59]     Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

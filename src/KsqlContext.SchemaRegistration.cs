@@ -541,8 +541,13 @@ public abstract partial class KsqlContext
         if (model.QueryModel == null)
             return;
 
+        var derivedType = model.QueryModel!.DetermineType();
         var isTable = model.GetExplicitStreamTableType() == StreamTableType.Table ||
-            model.QueryModel!.DetermineType() == StreamTableType.Table;
+            derivedType == StreamTableType.Table;
+
+        // Ensure query-defined entities get the correct Stream/Table classification
+        // so downstream components (e.g., cache enabling/resolution) behave correctly.
+        model.SetStreamTableType(isTable ? StreamTableType.Table : StreamTableType.Stream);
         _mappingRegistry.RegisterQueryModel(
             model.EntityType,
             model.QueryModel!,

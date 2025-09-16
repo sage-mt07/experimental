@@ -72,11 +72,32 @@ public sealed class TimeBucket<T> where T : class
         await task.ConfigureAwait(false);
         var resultProp = taskObj.GetType().GetProperty("Result")!;
         var resultEnum = (IEnumerable)resultProp.GetValue(taskObj)!;
-        var list = new List<T>();
-        foreach (var item in resultEnum) list.Add((T)item);
-        if (list.Count == 0)
-            throw new InvalidOperationException("No rows matched the filter.");
-        return list;
+        List<T> Snapshot()
+        {
+            var acc = new List<T>();
+            foreach (var item in resultEnum) acc.Add((T)item);
+            return acc;
+        }
+
+        var list = Snapshot();
+        if (list.Count > 0) return list;
+
+        // Best-effort warm-up wait: derived TABLEs and local cache may lag slightly
+        // behind ksqlDB materialization. Poll the store briefly for new rows.
+        var maxWaitMs = 30000; // 30s
+        var deadline = DateTime.UtcNow.AddMilliseconds(maxWaitMs);
+        while (DateTime.UtcNow < deadline && !ct.IsCancellationRequested)
+        {
+            await Task.Delay(500, ct).ConfigureAwait(false);
+            // Re-enumerate current store contents
+            task = (System.Threading.Tasks.Task)toList!.Invoke(cache, new object?[] { filter, (TimeSpan?)null })!;
+            await task.ConfigureAwait(false);
+            resultProp = task.GetType().GetProperty("Result")!;
+            resultEnum = (IEnumerable)resultProp.GetValue(task)!;
+            list = Snapshot();
+            if (list.Count > 0) return list;
+        }
+        throw new InvalidOperationException("No rows matched the filter.");
     }
 
     internal string? FinalTopicName => _finalTopic;

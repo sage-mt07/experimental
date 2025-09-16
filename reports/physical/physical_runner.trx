@@ -1,0 +1,1263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="8c9b627e-245b-47e3-ae13-f7c85d191f84" name="@139e693f13f7 2025-09-15 22:59:07" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-09-15T22:59:07.8487711+00:00" queuing="2025-09-15T22:59:07.8487712+00:00" start="2025-09-15T22:55:55.5277669+00:00" finish="2025-09-15T22:59:07.8532479+00:00" />
+  <TestSettings name="default" id="5d6a4e64-764f-4cfe-ae0a-baa3dd5e5326">
+    <Deployment runDeploymentRoot="_139e693f13f7_2025-09-15_22_59_07" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="f7b3a7ed-a671-48fb-ab50-8cf9f5f9c77b" testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" testName="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" computerName="139e693f13f7" duration="00:03:00.6741877" startTime="2025-09-15T22:59:07.7335648+00:00" endTime="2025-09-15T22:59:07.7335812+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7b3a7ed-a671-48fb-ab50-8cf9f5f9c77b">
+      <Output>
+        <ErrorInfo>
+          <Message>Streamiz.Kafka.Net.Errors.InvalidStateStoreException : Cannot get state store bar_tbimp_1m_live because the stream thread is PENDING_SHUTDOWN, not RUNNING</Message>
+          <StackTrace>   at Streamiz.Kafka.Net.State.Internal.StreamThreadStateStoreProvider.Stores[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+   at Streamiz.Kafka.Net.State.Internal.QueryableStoreProvider.&lt;&gt;c__DisplayClass3_0`3.&lt;GetStore&gt;b__0(StreamThreadStateStoreProvider store)
+   at System.Linq.Enumerable.SelectManySingleSelectorIterator`2.MoveNext()
+   at System.Linq.Enumerable.&lt;Any&gt;g__WithEnumerator|36_0[TSource](IEnumerable`1 source)
+   at System.Linq.Enumerable.Any[TSource](IEnumerable`1 source)
+   at Streamiz.Kafka.Net.State.Internal.QueryableStoreProvider.GetStore[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+   at Streamiz.Kafka.Net.KafkaStream.Store[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+   at Kafka.Ksql.Linq.Cache.Extensions.KsqlContextCacheExtensions.&lt;&gt;c__DisplayClass5_0`2.&lt;CreateEnumeratorLazy&gt;b__0()
+   at System.Lazy`1.ViaFactory(LazyThreadSafetyMode mode)
+--- End of stack trace from previous location ---
+   at System.Lazy`1.CreateValue()
+   at Kafka.Ksql.Linq.Cache.Core.TableCache`1.ToListAsync(List`1 filter, Nullable`1 timeout) in /src/src/Cache/Core/TableCache.cs:line 56
+   at Kafka.Ksql.Linq.Cache.Core.TableCache`1.ToListAsync(List`1 filter, Nullable`1 timeout) in /src/src/Cache/Core/TableCache.cs:line 82
+   at Kafka.Ksql.Linq.Runtime.TimeBucket`1.ToListAsync(IReadOnlyList`1 pkFilter, CancellationToken ct) in /src/src/Runtime/TimeBucket.cs:line 72
+   at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket() in /src/physicalTests/OssSamples/TimeBucketImportTumblingTests.cs:line 207
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" storage="/src/physicaltests/bin/release/net8.0/kafka.ksql.linq.tests.integration.dll" id="d4f95360-fa20-03e1-5810-a5fd78838e0d">
+      <Execution id="f7b3a7ed-a671-48fb-ab50-8cf9f5f9c77b" />
+      <TestMethod codeBase="/src/physicalTests/bin/Release/net8.0/Kafka.Ksql.Linq.Tests.Integration.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests" name="Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" executionId="f7b3a7ed-a671-48fb-ab50-8cf9f5f9c77b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.6+bf9b858c26 (64-bit .NET 8.0.20)
+[xUnit.net 00:00:00.21]   Discovering: Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.27]   Discovered:  Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.27]   Starting:    Kafka.Ksql.Linq.Tests.Integration
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW TOPICS;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (simple DlqEnvelope): CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc VARCHAR, IngestedAtUtc VARCHAR, PayloadFormatKey VARCHAR, PayloadFormatValue VARCHAR, SchemaIdKey VARCHAR, SchemaIdValue VARCHAR, KeyIsNull BOOLEAN, ErrorType VARCHAR, ErrorMessageShort VARCHAR, StackTraceShort VARCHAR, ErrorFingerprint VARCHAR, ApplicationId VARCHAR, ConsumerGroup VARCHAR, Host VARCHAR, Headers MAP&lt;STRING, STRING&gt;) WITH (KAFKA_TOPIC='dead-letter-queue', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_messaging.dead_letter_queue_valueAvro', PARTITIONS=1, REPLICAS=1);
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc ...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW TOPICS;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (simple Tick): CREATE OR REPLACE STREAM ticks_tbimp (Broker VARCHAR KEY, Symbol VARCHAR KEY, TimestampUtc TIMESTAMP, Bid DECIMAL(18, 2)) WITH (KAFKA_TOPIC='ticks_tbimp', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_tests_integration.ticks_tbimp_valueAvro', TIMESTAMP='TimestampUtc', PARTITIONS=1, REPLICAS=1);
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE OR REPLACE STREAM ticks_tbimp (Broker VARCHAR KEY, Symbol VARCHAR KEY, TimestampUtc TIMESTAMP, Bid DECIMAL(18, 2)...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (derived bar_tbimp_1s_final): CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(Bid) AS Open, MAX(Bid) AS High, MIN(Bid) AS Low, LATEST_BY_OFFSET(Bid) AS Close
+      FROM TICKS_TBIMP o WINDOW TUMBLING (SIZE 1 SECONDS)
+      GROUP BY o.BROKER, o.SYMBOL
+      EMIT FINAL;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS SELEC...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (derived bar_tbimp_1s_final_s): CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, 2), HIGH DECIMAL(18, 2), LOW DECIMAL(18, 2), CLOSE DECIMAL(18, 2)) WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1);
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, ...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (derived bar_tbimp_1m_live): CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close
+      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 1 MINUTES, GRACE PERIOD 2 SECONDS)
+      GROUP BY o.BROKER, o.SYMBOL
+      EMIT CHANGES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS SELECT ...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (derived bar_tbimp_5m_live): CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close
+      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 5 MINUTES, GRACE PERIOD 3 SECONDS)
+      GROUP BY o.BROKER, o.SYMBOL
+      EMIT CHANGES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS SELECT ...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=SHOW QUERIES;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      Kafka initialization completed; DLQ topic 'dead-letter-queue' ready with 5000ms retention
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp]  Start creation of the stream application with this configuration: 
+      	Stream property:
+      		client.id: 	
+      		num.stream.threads: 	1
+      		default.key.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[kafka_ksql_linq_tests_integration.bar_tbimp_keyAvro]
+      		default.value.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[Avro.Generic.GenericRecord]
+      		default.timestamp.extractor: 	Streamiz.Kafka.Net.Processors.Internal.FailOnInvalidTimestamp
+      		commit.interval.ms: 	500
+      		processing.guarantee: 	AT_LEAST_ONCE
+      		transaction.timeout: 	00:00:10
+      		poll.ms: 	100
+      		max.poll.records: 	500
+      		max.poll.restoring.records: 	1000
+      		max.task.idle.ms: 	0
+      		buffered.records.per.partition: 	2147483647
+      		inner.exception.handler: 	System.Func`2[System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		production.exception.handler: 	System.Func`2[Confluent.Kafka.DeliveryReport`2[System.Byte[],System.Byte[]],Streamiz.Kafka.Net.ProductionExceptionHandlerResponse]
+      		deserialization.exception.handler: 	System.Func`4[Streamiz.Kafka.Net.ProcessorContext,Confluent.Kafka.ConsumeResult`2[System.Byte[],System.Byte[]],System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		rocksdb.config.setter: 	System.Action`2[System.String,Streamiz.Kafka.Net.State.RocksDbOptions]
+      		follow.metadata: 	False
+      		state.dir: 	/tmp/ksql-dsl-app-bar_tbimp
+      		replication.factor: 	-1
+      		windowstore.changelog.additional.retention.ms: 	86400000
+      		offset.checkpoint.manager: 	
+      		metrics.interval.ms: 	30000
+      		metrics.recording.level: 	INFO
+      		log.processing.summary: 	00:01:00
+      		metrics.reporter: 	System.Action`1[System.Collections.Generic.IEnumerable`1[Streamiz.Kafka.Net.Metrics.Sensor]]
+      		expose.librdkafka.stats: 	False
+      		start.task.delay.ms: 	5000
+      		parallel.processing: 	False
+      		max.degree.of.parallelism: 	8
+      		statestore.cache.max.bytes: 	5242880
+      		application.id: 	ksql-dsl-app-bar_tbimp
+      		schema.registry.url: 	http://schema-registry:8081
+      	Client property:
+      		bootstrap.servers: 	kafka:29092
+      	Consumer property:
+      		max.poll.interval.ms: 	300000
+      		enable.auto.commit: 	False
+      		enable.auto.offset.store: 	False
+      		allow.auto.create.topics: 	False
+      		partition.assignment.strategy: 	range
+      		auto.offset.reset: 	earliest
+      	Producer property:
+      		allow.auto.create.topics: 	False
+      		partitioner: 	murmur2_random
+      	Admin client property:
+      		allow.auto.create.topics: 	False
+info: Streamiz.Kafka.Net.Processors.Internal.StateDirectory[0]
+      No process id found on disk, got fresh process id 9099cd08-cbc2-4404-8414-28ce4c941bb1
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Creating consumer client
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp] State transition from CREATED to REBALANCING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp] Starting Streams client with this topology : Topologies:
+         Sub-topology: 1
+          Source: KSTREAM-SOURCE-0000000004 (topics: [bar_tbimp-by-stringkey-repartition])
+            --&gt; KSTREAM-TOTABLE-0000000005
+          Processor: KSTREAM-TOTABLE-0000000005 (stores: [bar_tbimp])
+            --&gt; none
+            &lt;-- KSTREAM-SOURCE-0000000004
+         Sub-topology: 0
+          Source: KSTREAM-SOURCE-0000000000 (topics: [bar_tbimp])
+            --&gt; KSTREAM-KEY-SELECT-0000000001
+          Processor: KSTREAM-KEY-SELECT-0000000001 (stores: [])
+            --&gt; KSTREAM-FILTER-0000000003
+            &lt;-- KSTREAM-SOURCE-0000000000
+          Processor: KSTREAM-FILTER-0000000003 (stores: [])
+            --&gt; KSTREAM-SINK-0000000002
+            &lt;-- KSTREAM-KEY-SELECT-0000000001
+          Sink: KSTREAM-SINK-0000000002 (topic: bar_tbimp-by-stringkey-repartition)
+            &lt;-- KSTREAM-FILTER-0000000003
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_5m_live]  Start creation of the stream application with this configuration: 
+      	Stream property:
+      		client.id: 	
+      		num.stream.threads: 	1
+      		default.key.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[bar_tbimp_ksql.bar_tbimp_5m_live_keyAvro]
+      		default.value.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[Avro.Generic.GenericRecord]
+      		default.timestamp.extractor: 	Streamiz.Kafka.Net.Processors.Internal.FailOnInvalidTimestamp
+      		commit.interval.ms: 	500
+      		processing.guarantee: 	AT_LEAST_ONCE
+      		transaction.timeout: 	00:00:10
+      		poll.ms: 	100
+      		max.poll.records: 	500
+      		max.poll.restoring.records: 	1000
+      		max.task.idle.ms: 	0
+      		buffered.records.per.partition: 	2147483647
+      		inner.exception.handler: 	System.Func`2[System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		production.exception.handler: 	System.Func`2[Confluent.Kafka.DeliveryReport`2[System.Byte[],System.Byte[]],Streamiz.Kafka.Net.ProductionExceptionHandlerResponse]
+      		deserialization.exception.handler: 	System.Func`4[Streamiz.Kafka.Net.ProcessorContext,Confluent.Kafka.ConsumeResult`2[System.Byte[],System.Byte[]],System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		rocksdb.config.setter: 	System.Action`2[System.String,Streamiz.Kafka.Net.State.RocksDbOptions]
+      		follow.metadata: 	False
+      		state.dir: 	/tmp/ksql-dsl-app-bar_tbimp_5m_live
+      		replication.factor: 	-1
+      		windowstore.changelog.additional.retention.ms: 	86400000
+      		offset.checkpoint.manager: 	
+      		metrics.interval.ms: 	30000
+      		metrics.recording.level: 	INFO
+      		log.processing.summary: 	00:01:00
+      		metrics.reporter: 	System.Action`1[System.Collections.Generic.IEnumerable`1[Streamiz.Kafka.Net.Metrics.Sensor]]
+      		expose.librdkafka.stats: 	False
+      		start.task.delay.ms: 	5000
+      		parallel.processing: 	False
+      		max.degree.of.parallelism: 	8
+      		statestore.cache.max.bytes: 	5242880
+      		application.id: 	ksql-dsl-app-bar_tbimp_5m_live
+      		schema.registry.url: 	http://schema-registry:8081
+      	Client property:
+      		bootstrap.servers: 	kafka:29092
+      	Consumer property:
+      		max.poll.interval.ms: 	300000
+      		enable.auto.commit: 	False
+      		enable.auto.offset.store: 	False
+      		allow.auto.create.topics: 	False
+      		partition.assignment.strategy: 	range
+      		auto.offset.reset: 	earliest
+      	Producer property:
+      		allow.auto.create.topics: 	False
+      		partitioner: 	murmur2_random
+      	Admin client property:
+      		allow.auto.create.topics: 	False
+info: Streamiz.Kafka.Net.Processors.Internal.StateDirectory[0]
+      Reading UUID from process file: 9099cd08-cbc2-4404-8414-28ce4c941bb1
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Creating consumer client
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_5m_live] State transition from CREATED to REBALANCING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_5m_live] Starting Streams client with this topology : Topologies:
+         Sub-topology: 1
+          Source: KSTREAM-SOURCE-0000000004 (topics: [bar_tbimp_5m_live-by-stringkey-repartition])
+            --&gt; KSTREAM-TOTABLE-0000000005
+          Processor: KSTREAM-TOTABLE-0000000005 (stores: [bar_tbimp_5m_live])
+            --&gt; none
+            &lt;-- KSTREAM-SOURCE-0000000004
+         Sub-topology: 0
+          Source: KSTREAM-SOURCE-0000000000 (topics: [bar_tbimp_5m_live])
+            --&gt; KSTREAM-KEY-SELECT-0000000001
+          Processor: KSTREAM-KEY-SELECT-0000000001 (stores: [])
+            --&gt; KSTREAM-FILTER-0000000003
+            &lt;-- KSTREAM-SOURCE-0000000000
+          Processor: KSTREAM-FILTER-0000000003 (stores: [])
+            --&gt; KSTREAM-SINK-0000000002
+            &lt;-- KSTREAM-KEY-SELECT-0000000001
+          Sink: KSTREAM-SINK-0000000002 (topic: bar_tbimp_5m_live-by-stringkey-repartition)
+            &lt;-- KSTREAM-FILTER-0000000003
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1m_live]  Start creation of the stream application with this configuration: 
+      	Stream property:
+      		client.id: 	
+      		num.stream.threads: 	1
+      		default.key.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[bar_tbimp_ksql.bar_tbimp_1m_live_keyAvro]
+      		default.value.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[Avro.Generic.GenericRecord]
+      		default.timestamp.extractor: 	Streamiz.Kafka.Net.Processors.Internal.FailOnInvalidTimestamp
+      		commit.interval.ms: 	500
+      		processing.guarantee: 	AT_LEAST_ONCE
+      		transaction.timeout: 	00:00:10
+      		poll.ms: 	100
+      		max.poll.records: 	500
+      		max.poll.restoring.records: 	1000
+      		max.task.idle.ms: 	0
+      		buffered.records.per.partition: 	2147483647
+      		inner.exception.handler: 	System.Func`2[System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		production.exception.handler: 	System.Func`2[Confluent.Kafka.DeliveryReport`2[System.Byte[],System.Byte[]],Streamiz.Kafka.Net.ProductionExceptionHandlerResponse]
+      		deserialization.exception.handler: 	System.Func`4[Streamiz.Kafka.Net.ProcessorContext,Confluent.Kafka.ConsumeResult`2[System.Byte[],System.Byte[]],System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		rocksdb.config.setter: 	System.Action`2[System.String,Streamiz.Kafka.Net.State.RocksDbOptions]
+      		follow.metadata: 	False
+      		state.dir: 	/tmp/ksql-dsl-app-bar_tbimp_1m_live
+      		replication.factor: 	-1
+      		windowstore.changelog.additional.retention.ms: 	86400000
+      		offset.checkpoint.manager: 	
+      		metrics.interval.ms: 	30000
+      		metrics.recording.level: 	INFO
+      		log.processing.summary: 	00:01:00
+      		metrics.reporter: 	System.Action`1[System.Collections.Generic.IEnumerable`1[Streamiz.Kafka.Net.Metrics.Sensor]]
+      		expose.librdkafka.stats: 	False
+      		start.task.delay.ms: 	5000
+      		parallel.processing: 	False
+      		max.degree.of.parallelism: 	8
+      		statestore.cache.max.bytes: 	5242880
+      		application.id: 	ksql-dsl-app-bar_tbimp_1m_live
+      		schema.registry.url: 	http://schema-registry:8081
+      	Client property:
+      		bootstrap.servers: 	kafka:29092
+      	Consumer property:
+      		max.poll.interval.ms: 	300000
+      		enable.auto.commit: 	False
+      		enable.auto.offset.store: 	False
+      		allow.auto.create.topics: 	False
+      		partition.assignment.strategy: 	range
+      		auto.offset.reset: 	earliest
+      	Producer property:
+      		allow.auto.create.topics: 	False
+      		partitioner: 	murmur2_random
+      	Admin client property:
+      		allow.auto.create.topics: 	False
+info: Streamiz.Kafka.Net.Processors.Internal.StateDirectory[0]
+      Reading UUID from process file: 9099cd08-cbc2-4404-8414-28ce4c941bb1
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Creating consumer client
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1m_live] State transition from CREATED to REBALANCING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1m_live] Starting Streams client with this topology : Topologies:
+         Sub-topology: 1
+          Source: KSTREAM-SOURCE-0000000004 (topics: [bar_tbimp_1m_live-by-stringkey-repartition])
+            --&gt; KSTREAM-TOTABLE-0000000005
+          Processor: KSTREAM-TOTABLE-0000000005 (stores: [bar_tbimp_1m_live])
+            --&gt; none
+            &lt;-- KSTREAM-SOURCE-0000000004
+         Sub-topology: 0
+          Source: KSTREAM-SOURCE-0000000000 (topics: [bar_tbimp_1m_live])
+            --&gt; KSTREAM-KEY-SELECT-0000000001
+          Processor: KSTREAM-KEY-SELECT-0000000001 (stores: [])
+            --&gt; KSTREAM-FILTER-0000000003
+            &lt;-- KSTREAM-SOURCE-0000000000
+          Processor: KSTREAM-FILTER-0000000003 (stores: [])
+            --&gt; KSTREAM-SINK-0000000002
+            &lt;-- KSTREAM-KEY-SELECT-0000000001
+          Sink: KSTREAM-SINK-0000000002 (topic: bar_tbimp_1m_live-by-stringkey-repartition)
+            &lt;-- KSTREAM-FILTER-0000000003
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1s_final]  Start creation of the stream application with this configuration: 
+      	Stream property:
+      		client.id: 	
+      		num.stream.threads: 	1
+      		default.key.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[bar_tbimp_ksql.bar_tbimp_1s_final_keyAvro]
+      		default.value.serdes: 	Streamiz.Kafka.Net.SchemaRegistry.SerDes.Avro.SchemaAvroSerDes`1[Avro.Generic.GenericRecord]
+      		default.timestamp.extractor: 	Streamiz.Kafka.Net.Processors.Internal.FailOnInvalidTimestamp
+      		commit.interval.ms: 	500
+      		processing.guarantee: 	AT_LEAST_ONCE
+      		transaction.timeout: 	00:00:10
+      		poll.ms: 	100
+      		max.poll.records: 	500
+      		max.poll.restoring.records: 	1000
+      		max.task.idle.ms: 	0
+      		buffered.records.per.partition: 	2147483647
+      		inner.exception.handler: 	System.Func`2[System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		production.exception.handler: 	System.Func`2[Confluent.Kafka.DeliveryReport`2[System.Byte[],System.Byte[]],Streamiz.Kafka.Net.ProductionExceptionHandlerResponse]
+      		deserialization.exception.handler: 	System.Func`4[Streamiz.Kafka.Net.ProcessorContext,Confluent.Kafka.ConsumeResult`2[System.Byte[],System.Byte[]],System.Exception,Streamiz.Kafka.Net.ExceptionHandlerResponse]
+      		rocksdb.config.setter: 	System.Action`2[System.String,Streamiz.Kafka.Net.State.RocksDbOptions]
+      		follow.metadata: 	False
+      		state.dir: 	/tmp/ksql-dsl-app-bar_tbimp_1s_final
+      		replication.factor: 	-1
+      		windowstore.changelog.additional.retention.ms: 	86400000
+      		offset.checkpoint.manager: 	
+      		metrics.interval.ms: 	30000
+      		metrics.recording.level: 	INFO
+      		log.processing.summary: 	00:01:00
+      		metrics.reporter: 	System.Action`1[System.Collections.Generic.IEnumerable`1[Streamiz.Kafka.Net.Metrics.Sensor]]
+      		expose.librdkafka.stats: 	False
+      		start.task.delay.ms: 	5000
+      		parallel.processing: 	False
+      		max.degree.of.parallelism: 	8
+      		statestore.cache.max.bytes: 	5242880
+      		application.id: 	ksql-dsl-app-bar_tbimp_1s_final
+      		schema.registry.url: 	http://schema-registry:8081
+      	Client property:
+      		bootstrap.servers: 	kafka:29092
+      	Consumer property:
+      		max.poll.interval.ms: 	300000
+      		enable.auto.commit: 	False
+      		enable.auto.offset.store: 	False
+      		allow.auto.create.topics: 	False
+      		partition.assignment.strategy: 	range
+      		auto.offset.reset: 	earliest
+      	Producer property:
+      		allow.auto.create.topics: 	False
+      		partitioner: 	murmur2_random
+      	Admin client property:
+      		allow.auto.create.topics: 	False
+info: Streamiz.Kafka.Net.Processors.Internal.StateDirectory[0]
+      Reading UUID from process file: 9099cd08-cbc2-4404-8414-28ce4c941bb1
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Creating consumer client
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1s_final] State transition from CREATED to REBALANCING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1s_final] Starting Streams client with this topology : Topologies:
+         Sub-topology: 1
+          Source: KSTREAM-SOURCE-0000000004 (topics: [bar_tbimp_1s_final-by-stringkey-repartition])
+            --&gt; KSTREAM-TOTABLE-0000000005
+          Processor: KSTREAM-TOTABLE-0000000005 (stores: [bar_tbimp_1s_final])
+            --&gt; none
+            &lt;-- KSTREAM-SOURCE-0000000004
+         Sub-topology: 0
+          Source: KSTREAM-SOURCE-0000000000 (topics: [bar_tbimp_1s_final])
+            --&gt; KSTREAM-KEY-SELECT-0000000001
+          Processor: KSTREAM-KEY-SELECT-0000000001 (stores: [])
+            --&gt; KSTREAM-FILTER-0000000003
+            &lt;-- KSTREAM-SOURCE-0000000000
+          Processor: KSTREAM-FILTER-0000000003 (stores: [])
+            --&gt; KSTREAM-SINK-0000000002
+            &lt;-- KSTREAM-KEY-SELECT-0000000001
+          Sink: KSTREAM-SINK-0000000002 (topic: bar_tbimp_1s_final-by-stringkey-repartition)
+            &lt;-- KSTREAM-FILTER-0000000003
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      producer:ticks_tbimp config: Acks=All, BatchNumMessages=10000, BatchSize=16384, BootstrapServers=kafka:29092, ClientId=ksql-dsl-client, CompressionType=Snappy, EnableIdempotence=True, LingerMs=5, MaxInFlight=1, MessageTimeoutMs=120000, RetryBackoffMs=100
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      schema-registry(producer) config: Url=http://schema-registry:8081
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+fail: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp] Error during initializing internal topics
+      Streamiz.Kafka.Net.Errors.StreamsException: An error occurred creating topics: [ksql-dsl-app-bar_tbimp-bar_tbimp-by-stringkey-repartition]: [Number of partitions must be larger than 0.].
+       ---&gt; Confluent.Kafka.Admin.CreateTopicsException: An error occurred creating topics: [ksql-dsl-app-bar_tbimp-bar_tbimp-by-stringkey-repartition]: [Number of partitions must be larger than 0.].
+         at Streamiz.Kafka.Net.Processors.DefaultTopicManager.&lt;&gt;c__DisplayClass8_0.&lt;&lt;ApplyAsync&gt;g__Run|0&gt;d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Streamiz.Kafka.Net.Processors.DefaultTopicManager.ApplyAsync(Int32 topologyId, IDictionary`2 topics)
+         --- End of inner exception stack trace ---
+         at Streamiz.Kafka.Net.Processors.DefaultTopicManager.ApplyAsync(Int32 topologyId, IDictionary`2 topics)
+         at Streamiz.Kafka.Net.Processors.Internal.InternalTopicManagerUtils.CreateInternalTopicsAsync(ITopicManager topicManager, InternalTopologyBuilder builder)
+         at Streamiz.Kafka.Net.KafkaStream.InitializeInternalTopicManagerAsync()
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp] State transition from REBALANCING to PENDING_SHUTDOWN
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Starting
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from CREATED to STARTING
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Starting
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from CREATED to STARTING
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Starting
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from CREATED to STARTING
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      New partitions assign requested : bar_tbimp_1m_live [[0]],ksql-dsl-app-bar_tbimp_1m_live-bar_tbimp_1m_live-by-stringkey-repartition [[0]]
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      New partitions assign requested : bar_tbimp_1s_final [[0]],ksql-dsl-app-bar_tbimp_1s_final-bar_tbimp_1s_final-by-stringkey-repartition [[0]]
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      New partitions assign requested : bar_tbimp_5m_live [[0]],ksql-dsl-app-bar_tbimp_5m_live-bar_tbimp_5m_live-by-stringkey-repartition [[0]]
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from STARTING to PARTITIONS_ASSIGNED
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from STARTING to PARTITIONS_ASSIGNED
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from STARTING to PARTITIONS_ASSIGNED
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      Partition assignment took 00:00:00.5061333 ms.
+      	Currently assigned active tasks: 1-0,0-0
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      Partition assignment took 00:00:00.5151087 ms.
+      	Currently assigned active tasks: 1-0,0-0
+info: Streamiz.Kafka.Net.Kafka.Internal.StreamsRebalanceListener[0]
+      Partition assignment took 00:00:00.4353297 ms.
+      	Currently assigned active tasks: 1-0,0-0
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PARTITIONS_ASSIGNED to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PARTITIONS_ASSIGNED to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PARTITIONS_ASSIGNED to RUNNING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1s_final] State transition from REBALANCING to RUNNING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_5m_live] State transition from REBALANCING to RUNNING
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1m_live] State transition from REBALANCING to RUNNING
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.Internal.ProcessorStateManager[0]
+      State store bar_tbimp_1s_final did not find checkpoint offset, hence would default to the starting offset at changelog ksql-dsl-app-bar_tbimp_1s_final-bar_tbimp_1s_final-changelog [[0]]
+info: Streamiz.Kafka.Net.Processors.Internal.ProcessorStateManager[0]
+      State store bar_tbimp_5m_live did not find checkpoint offset, hence would default to the starting offset at changelog ksql-dsl-app-bar_tbimp_5m_live-bar_tbimp_5m_live-changelog [[0]]
+info: Streamiz.Kafka.Net.Processors.Internal.ProcessorStateManager[0]
+      State store bar_tbimp_1m_live did not find checkpoint offset, hence would default to the starting offset at changelog ksql-dsl-app-bar_tbimp_1m_live-bar_tbimp_1m_live-changelog [[0]]
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from CREATED to RESTORING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from CREATED to RESTORING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restoration will start soon.
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restoration will start soon.
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from CREATED to RESTORING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restoration will start soon.
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from CREATED to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from CREATED to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from CREATED to RUNNING
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.Internal.StoreChangelogReader[0]
+      Finished restoring changelog bar_tbimp_1m_live to store ksql-dsl-app-bar_tbimp_1m_live-bar_tbimp_1m_live-changelog [[0]] with a total number of 0 records
+info: Streamiz.Kafka.Net.Processors.Internal.StoreChangelogReader[0]
+      Finished restoring changelog bar_tbimp_1s_final to store ksql-dsl-app-bar_tbimp_1s_final-bar_tbimp_1s_final-changelog [[0]] with a total number of 0 records
+info: Streamiz.Kafka.Net.Processors.Internal.StoreChangelogReader[0]
+      Finished restoring changelog bar_tbimp_5m_live to store ksql-dsl-app-bar_tbimp_5m_live-bar_tbimp_5m_live-changelog [[0]] with a total number of 0 records
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RESTORING to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RESTORING to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restored and ready to run
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restored and ready to run
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RESTORING to RUNNING
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Restored and ready to run
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      Restoration took 743ms for all tasks 1-0,0-0
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      Restoration took 734ms for all tasks 1-0,0-0
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      Restoration took 663ms for all tasks 1-0,0-0
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+info: Kafka.Ksql.Linq.Messaging.Producers.KafkaProducerManager[0]
+      kafka produce: topic=ticks_tbimp, entity=Tick, method=SendAsync
+fail: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Encountered the following error during processing:
+      Streamiz.Kafka.Net.Errors.DeserializationException: stream-task[0|0]|processor[KSTREAM-SOURCE-0000000000]- Error during key deserialization[Topic:bar_tbimp_1m_live| Partition:[0]| Offset:0| Timestamp:1757976644190]
+       ---&gt; Avro.AvroException: Schema mismatch. Reader: {"type":"record","name":"bar_tbimp_1m_live_keyAvro","namespace":"bar_tbimp_ksql","fields":[{"name":"Broker","default":"","type":["null","string"]},{"name":"Symbol","default":"","type":["null","string"]},{"name":"BucketStart","default":0,"type":{"type":"long","logicalType":"timestamp-millis"}}]}, writer: {"type":"record","name":"BarTbimp1mLiveKey","namespace":"io.confluent.ksql.avro_schemas","fields":[{"name":"BROKER","default":null,"type":["null","string"]},{"name":"SYMBOL","default":null,"type":["null","string"]}],"connect.name":"io.confluent.ksql.avro_schemas.BarTbimp1mLiveKey"}
+         at Avro.Generic.DefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificDefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificReader`1..ctor(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.GetDatumReader(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.Deserialize(String topic, Headers headers, ReadOnlyMemory`1 array, Boolean isKey)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.SchemaRegistry.Serdes.AvroDeserializer`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.Kafka.SyncOverAsync.SyncOverAsyncDeserializer`1.Deserialize(ReadOnlySpan`1 data, Boolean isNull, SerializationContext context)
+         at Streamiz.Kafka.Net.SchemaRegistry.SerDes.SchemaSerDes`3.Deserialize(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.SerDes.AbstractSerDes`1.DeserializeObject(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         --- End of inner exception stack trace ---
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.ToConsumeObject(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.UpdateHeadRecord()
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.Queue(ConsumeResult`2 item)
+         at Streamiz.Kafka.Net.Processors.Internal.PartitionGrouper.AddRecord(TopicPartition topicPartition, ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamTask.AddRecord(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamThread.AddToTasks(IEnumerable`1 records)
+         at Streamiz.Kafka.Net.Processors.StreamThread.Run()
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutting down
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from RUNNING to PENDING_SHUTDOWN
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closed
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closed
+fail: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Encountered the following error during processing:
+      Streamiz.Kafka.Net.Errors.DeserializationException: stream-task[0|0]|processor[KSTREAM-SOURCE-0000000000]- Error during key deserialization[Topic:bar_tbimp_1s_final| Partition:[0]| Offset:0| Timestamp:1757976644190]
+       ---&gt; Avro.AvroException: Schema mismatch. Reader: {"type":"record","name":"bar_tbimp_1s_final_keyAvro","namespace":"bar_tbimp_ksql","fields":[{"name":"Broker","default":"","type":["null","string"]},{"name":"Symbol","default":"","type":["null","string"]},{"name":"BucketStart","default":0,"type":{"type":"long","logicalType":"timestamp-millis"}}]}, writer: {"type":"record","name":"BarTbimp1sFinalKey","namespace":"io.confluent.ksql.avro_schemas","fields":[{"name":"BROKER","default":null,"type":["null","string"]},{"name":"SYMBOL","default":null,"type":["null","string"]}],"connect.name":"io.confluent.ksql.avro_schemas.BarTbimp1sFinalKey"}
+         at Avro.Generic.DefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificDefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificReader`1..ctor(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.GetDatumReader(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.Deserialize(String topic, Headers headers, ReadOnlyMemory`1 array, Boolean isKey)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.SchemaRegistry.Serdes.AvroDeserializer`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.Kafka.SyncOverAsync.SyncOverAsyncDeserializer`1.Deserialize(ReadOnlySpan`1 data, Boolean isNull, SerializationContext context)
+         at Streamiz.Kafka.Net.SchemaRegistry.SerDes.SchemaSerDes`3.Deserialize(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.SerDes.AbstractSerDes`1.DeserializeObject(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         --- End of inner exception stack trace ---
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.ToConsumeObject(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.UpdateHeadRecord()
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.Queue(ConsumeResult`2 item)
+         at Streamiz.Kafka.Net.Processors.Internal.PartitionGrouper.AddRecord(TopicPartition topicPartition, ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamTask.AddRecord(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamThread.AddToTasks(IEnumerable`1 records)
+         at Streamiz.Kafka.Net.Processors.StreamThread.Run()
+fail: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Encountered the following error during processing:
+      Streamiz.Kafka.Net.Errors.DeserializationException: stream-task[0|0]|processor[KSTREAM-SOURCE-0000000000]- Error during key deserialization[Topic:bar_tbimp_5m_live| Partition:[0]| Offset:0| Timestamp:1757976644190]
+       ---&gt; Avro.AvroException: Schema mismatch. Reader: {"type":"record","name":"bar_tbimp_5m_live_keyAvro","namespace":"bar_tbimp_ksql","fields":[{"name":"Broker","default":"","type":["null","string"]},{"name":"Symbol","default":"","type":["null","string"]},{"name":"BucketStart","default":0,"type":{"type":"long","logicalType":"timestamp-millis"}}]}, writer: {"type":"record","name":"BarTbimp5mLiveKey","namespace":"io.confluent.ksql.avro_schemas","fields":[{"name":"BROKER","default":null,"type":["null","string"]},{"name":"SYMBOL","default":null,"type":["null","string"]}],"connect.name":"io.confluent.ksql.avro_schemas.BarTbimp5mLiveKey"}
+         at Avro.Generic.DefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificDefaultReader..ctor(Schema writerSchema, Schema readerSchema)
+         at Avro.Specific.SpecificReader`1..ctor(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.GetDatumReader(Schema writerSchema, Schema readerSchema)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.Deserialize(String topic, Headers headers, ReadOnlyMemory`1 array, Boolean isKey)
+         at Confluent.SchemaRegistry.Serdes.SpecificDeserializerImpl`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.SchemaRegistry.Serdes.AvroDeserializer`1.DeserializeAsync(ReadOnlyMemory`1 data, Boolean isNull, SerializationContext context)
+         at Confluent.Kafka.SyncOverAsync.SyncOverAsyncDeserializer`1.Deserialize(ReadOnlySpan`1 data, Boolean isNull, SerializationContext context)
+         at Streamiz.Kafka.Net.SchemaRegistry.SerDes.SchemaSerDes`3.Deserialize(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.SerDes.AbstractSerDes`1.DeserializeObject(Byte[] data, SerializationContext context)
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         --- End of inner exception stack trace ---
+         at Streamiz.Kafka.Net.Processors.AbstractProcessor`2.DeserializeKey(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.ToConsumeObject(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.UpdateHeadRecord()
+         at Streamiz.Kafka.Net.Processors.Internal.RecordQueue.Queue(ConsumeResult`2 item)
+         at Streamiz.Kafka.Net.Processors.Internal.PartitionGrouper.AddRecord(TopicPartition topicPartition, ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamTask.AddRecord(ConsumeResult`2 record)
+         at Streamiz.Kafka.Net.Processors.StreamThread.AddToTasks(IEnumerable`1 records)
+         at Streamiz.Kafka.Net.Processors.StreamThread.Run()
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutting down
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutting down
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from RUNNING to PENDING_SHUTDOWN
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from RUNNING to PENDING_SHUTDOWN
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closed
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Task 1-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[1|0] Closed
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Suspended running
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from RUNNING to SUSPENDED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closing
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Task 0-0 state transition from SUSPENDED to CLOSED
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closed
+info: Streamiz.Kafka.Net.Processors.StreamTask[0]
+      stream-task[0|0] Closed
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutdown complete
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PENDING_SHUTDOWN to DEAD
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1m_live] State transition from RUNNING to ERROR
+fail: Streamiz.Kafka.Net.Processors.StreamStateManager[0]
+      All stream threads have died. The instance will be in error state and should be closed
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutdown complete
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_5m_live-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PENDING_SHUTDOWN to DEAD
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_5m_live] State transition from RUNNING to ERROR
+fail: Streamiz.Kafka.Net.Processors.StreamStateManager[0]
+      All stream threads have died. The instance will be in error state and should be closed
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] Shutdown complete
+info: Streamiz.Kafka.Net.Processors.StreamThread[0]
+      stream-thread[ksql-dsl-app-bar_tbimp_1s_final-9099cd08-cbc2-4404-8414-28ce4c941bb1-stream-thread-0] State transition from PENDING_SHUTDOWN to DEAD
+info: Streamiz.Kafka.Net.KafkaStream[0]
+      stream-application[ksql-dsl-app-bar_tbimp_1s_final] State transition from RUNNING to ERROR
+fail: Streamiz.Kafka.Net.Processors.StreamStateManager[0]
+      All stream threads have died. The instance will be in error state and should be closed
+[xUnit.net 00:03:01.00]       Streamiz.Kafka.Net.Errors.InvalidStateStoreException : Cannot get state store bar_tbimp_1m_live because the stream thread is PENDING_SHUTDOWN, not RUNNING
+[xUnit.net 00:03:01.00]       Stack Trace:
+[xUnit.net 00:03:01.00]            at Streamiz.Kafka.Net.State.Internal.StreamThreadStateStoreProvider.Stores[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+[xUnit.net 00:03:01.00]            at Streamiz.Kafka.Net.State.Internal.QueryableStoreProvider.&lt;&gt;c__DisplayClass3_0`3.&lt;GetStore&gt;b__0(StreamThreadStateStoreProvider store)
+[xUnit.net 00:03:01.00]            at System.Linq.Enumerable.SelectManySingleSelectorIterator`2.MoveNext()
+[xUnit.net 00:03:01.00]            at System.Linq.Enumerable.&lt;Any&gt;g__WithEnumerator|36_0[TSource](IEnumerable`1 source)
+[xUnit.net 00:03:01.00]            at System.Linq.Enumerable.Any[TSource](IEnumerable`1 source)
+[xUnit.net 00:03:01.00]            at Streamiz.Kafka.Net.State.Internal.QueryableStoreProvider.GetStore[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+[xUnit.net 00:03:01.00]            at Streamiz.Kafka.Net.KafkaStream.Store[T,K,V](StoreQueryParameters`3 storeQueryParameters)
+[xUnit.net 00:03:01.00]            at Kafka.Ksql.Linq.Cache.Extensions.KsqlContextCacheExtensions.&lt;&gt;c__DisplayClass5_0`2.&lt;CreateEnumeratorLazy&gt;b__0()
+[xUnit.net 00:03:01.00]            at System.Lazy`1.ViaFactory(LazyThreadSafetyMode mode)
+[xUnit.net 00:03:01.00]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:01.00]            at System.Lazy`1.CreateValue()
+[xUnit.net 00:03:01.00]         /src/src/Cache/Core/TableCache.cs(56,0): at Kafka.Ksql.Linq.Cache.Core.TableCache`1.ToListAsync(List`1 filter, Nullable`1 timeout)
+[xUnit.net 00:03:01.00]         /src/src/Cache/Core/TableCache.cs(82,0): at Kafka.Ksql.Linq.Cache.Core.TableCache`1.ToListAsync(List`1 filter, Nullable`1 timeout)
+[xUnit.net 00:03:01.00]         /src/src/Runtime/TimeBucket.cs(72,0): at Kafka.Ksql.Linq.Runtime.TimeBucket`1.ToListAsync(IReadOnlyList`1 pkFilter, CancellationToken ct)
+[xUnit.net 00:03:01.00]         /src/physicalTests/OssSamples/TimeBucketImportTumblingTests.cs(207,0): at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()
+[xUnit.net 00:03:01.00]         --- End of stack trace from previous location ---
+[xUnit.net 00:03:01.00]   Finished:    Kafka.Ksql.Linq.Tests.Integration
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="139e693f13f7" outcome="Error" timestamp="2025-09-15T22:59:07.7318969+00:00">
+        <Text>[xUnit.net 00:03:01.00]     Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

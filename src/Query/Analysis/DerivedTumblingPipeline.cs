@@ -89,10 +89,76 @@ internal static class DerivedTumblingPipeline
             if (!allow)
                 continue;
             var (ddl, dt, ns) = BuildDdlAndRegister(baseName, queryModel, m, role, resolveType);
+
+            // Register TimeBucket read mapping so TimeBucket<T> resolves to the
+            // concrete per-timeframe entity type instead of the base class.
+            try
+            {
+                Kafka.Ksql.Linq.Runtime.Period period = ParsePeriod(tf);
+                Kafka.Ksql.Linq.Runtime.TimeBucketTypes.RegisterRead(baseModel.EntityType, period, dt);
+            }
+            catch { /* best-effort; do not block DDL */ }
             logger.LogInformation("KSQL DDL (derived {Entity}): {Sql}", m.TopicName, ddl);
             await execute(ddl);
-            mapping.RegisterEntityModel(m, genericValue: true, overrideNamespace: ns);
+            // Register mapping using explicit shapes captured in AdditionalSettings
+            try
+            {
+                var keyNames = m.AdditionalSettings.TryGetValue("keys", out var kObj3) && kObj3 is string[] kn ? kn : Array.Empty<string>();
+                var keyTypes = m.AdditionalSettings.TryGetValue("keys/types", out var ktObj3) && ktObj3 is Type[] kt ? kt : Array.Empty<Type>();
+                var valNames = m.AdditionalSettings.TryGetValue("projection", out var pObj3) && pObj3 is string[] vn ? vn : Array.Empty<string>();
+                var valTypes = m.AdditionalSettings.TryGetValue("projection/types", out var vtObj3) && vtObj3 is Type[] vt ? vt : Array.Empty<Type>();
+                var keyMeta = new Kafka.Ksql.Linq.Core.Models.PropertyMeta[Math.Min(keyNames.Length, keyTypes.Length)];
+                for (int i = 0; i < keyMeta.Length; i++)
+                {
+                    keyMeta[i] = new Kafka.Ksql.Linq.Core.Models.PropertyMeta
+                    {
+                        Name = keyNames[i],
+                        SourceName = keyNames[i],
+                        PropertyType = keyTypes[i],
+                        IsNullable = false,
+                        Attributes = Array.Empty<Attribute>()
+                    };
+                }
+                var valMeta = new Kafka.Ksql.Linq.Core.Models.PropertyMeta[valNames.Length];
+                for (int i = 0; i < valNames.Length && i < valTypes.Length; i++)
+                {
+                    valMeta[i] = new Kafka.Ksql.Linq.Core.Models.PropertyMeta
+                    {
+                        Name = valNames[i],
+                        SourceName = valNames[i],
+                        PropertyType = valTypes[i],
+                        IsNullable = true,
+                        Attributes = Array.Empty<Attribute>()
+                    };
+                }
+                mapping.RegisterMeta(dt, (keyMeta, valMeta), m.TopicName, genericKey: false, genericValue: true, overrideNamespace: ns);
+            }
+            catch { }
             registry[dt] = m;
+        }
+
+        static Kafka.Ksql.Linq.Runtime.Period ParsePeriod(string tf)
+        {
+            if (string.IsNullOrWhiteSpace(tf)) return Kafka.Ksql.Linq.Runtime.Period.Minutes(1);
+            if (tf.EndsWith("mo", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!int.TryParse(tf[..^2], out var vm)) vm = 1;
+                return Kafka.Ksql.Linq.Runtime.Period.Months(vm);
+            }
+            if (tf.EndsWith("wk", StringComparison.OrdinalIgnoreCase))
+            {
+                return Kafka.Ksql.Linq.Runtime.Period.Week();
+            }
+            var unit = char.ToLowerInvariant(tf[^1]);
+            if (!int.TryParse(tf[..^1], out var v)) v = 1;
+            return unit switch
+            {
+                's' => Kafka.Ksql.Linq.Runtime.Period.Seconds(v),
+                'm' => Kafka.Ksql.Linq.Runtime.Period.Minutes(v),
+                'h' => Kafka.Ksql.Linq.Runtime.Period.Hours(v),
+                'd' => Kafka.Ksql.Linq.Runtime.Period.Days(v),
+                _ => Kafka.Ksql.Linq.Runtime.Period.Minutes(1)
+            };
         }
     }
 

@@ -38,14 +38,14 @@ internal static class KsqlContextCacheExtensions
 
             var mapping = ((KsqlContext)context).GetMappingRegistry();
             var models = context.GetEntityModels();
-            if (!options.Entities.Any(e => e.EnableCache))
-                return;
+            var anyRequested = options.Entities.Any(e => e.EnableCache);
 
             var bootstrap = options.Common.BootstrapServers;
             var appIdBase = options.Common.ApplicationId;
             var schemaUrl = options.SchemaRegistry.Url;
             var registry = new TableCacheRegistry();
 
+            // 1) Explicitly requested caches via options.Entities
             foreach (var e in options.Entities.Where(e => e.EnableCache))
             {
                 var model = models.Values.FirstOrDefault(m => string.Equals(m.EntityType.Name, e.Entity, StringComparison.OrdinalIgnoreCase));
@@ -54,6 +54,38 @@ internal static class KsqlContextCacheExtensions
 
                 var kv = mapping.GetMapping(model.EntityType);
                 var storeName = e.StoreName ?? model.GetTopicName();
+                var topic = model.GetTopicName();
+                var applicationId = $"{appIdBase}-{storeName}";
+                var stateDir = Path.Combine(Path.GetTempPath(), applicationId);
+
+                var builder = new StreamBuilder();
+                var materialized = CreateStringKeyMaterializedGeneric(kv.AvroValueType!, storeName);
+                StreamToStringKeyTableGeneric(builder, kv.AvroKeyType!, kv.AvroValueType!, topic, materialized, kv);
+
+                var config = CreateStreamConfigGeneric(kv.AvroKeyType!, kv.AvroValueType!, applicationId, bootstrap, schemaUrl, stateDir, loggerFactory);
+                var ks = new KafkaStream(builder.Build(), (IStreamConfig)config);
+                var wait = CreateWaitUntilRunning(ks);
+                var enumerateLazy = CreateEnumeratorLazyGeneric(typeof(string), kv.AvroValueType!, ks, storeName);
+
+                var cache = CreateTableCacheGeneric(model.EntityType, mapping, storeName, wait, enumerateLazy);
+
+                registry.Register(model.EntityType, cache);
+
+                ks.StartAsync();
+            }
+
+            // 2) Auto-register caches for derived TABLE entities (e.g., bar_{tf}_live)
+            // This covers per-timeframe types used by TimeBucket<T>.
+            foreach (var model in models.Values)
+            {
+                // Identify derived TABLEs by AdditionalSettings markers
+                if (model.GetExplicitStreamTableType() != Kafka.Ksql.Linq.Query.Abstractions.StreamTableType.Table)
+                    continue;
+                if (!(model.AdditionalSettings.ContainsKey("timeframe") && model.AdditionalSettings.ContainsKey("role")))
+                    continue;
+
+                var kv = mapping.GetMapping(model.EntityType);
+                var storeName = model.GetTopicName(); // stable store per topic
                 var topic = model.GetTopicName();
                 var applicationId = $"{appIdBase}-{storeName}";
                 var stateDir = Path.Combine(Path.GetTempPath(), applicationId);
@@ -146,8 +178,12 @@ internal static class KsqlContextCacheExtensions
         cfg.BootstrapServers = bootstrap;
         cfg.SchemaRegistryUrl = schemaUrl;
         cfg.StateDir = stateDir;
+        // Start from beginning to avoid missing records relative to AddAsync
         cfg.AutoOffsetReset = AutoOffsetReset.Earliest;
         cfg.Logger = loggerFactory;
+        // Test-friendly visibility: reduce commit interval and disable cache buffering
+        try { cfg.CommitIntervalMs = 500; } catch { }
+        try { cfg.CacheMaxBytesBuffering = 0L; } catch { }
         return cfg;
     }
 

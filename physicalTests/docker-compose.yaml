@@ -54,6 +54,7 @@ services:
       KSQL_KSQL_SERVICE_ID: "ksql_service_1"
       KSQL_KSQL_COMMAND_TOPIC_REPLICATION_FACTOR: "1"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: "1"
+      # Start from beginning to avoid missing records relative to AddAsync
       KSQL_KSQL_STREAMS_AUTO_OFFSET_RESET: "earliest"
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
@@ -62,8 +63,8 @@ services:
       # GC settings (optimize pause time)
       KSQL_HEAP_OPTS: "-Xms3g -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
       # ksqlDBのメモリ関連設定
-      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "1073741824"  # 1GB
-      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "2000"
+      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "0"          # disable cache for tests
+      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "500"
       # RocksDBのメモリ設定
       KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"  
       # Logging: reduce verbosity for performance
@@ -111,4 +112,5 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KSQLDB_URL: http://ksqldb-server:8088
-    entrypoint: ["/bin/sh", "-lc", "set -e; echo waiting for services...; for i in $(seq 1 60); do if curl -fsS http://schema-registry:8081/subjects >/dev/null 2>&1 && curl -fsS http://ksqldb-server:8088/info >/dev/null 2>&1; then break; fi; sleep 2; done; dotnet test -c Release physicalTests/Kafka.Ksql.Linq.Tests.Integration.csproj --filter FullyQualifiedName~TimeBucketImportTumblingTests --logger 'trx;LogFileName=physical_runner.trx' --results-directory /src/reports/physical" ]
+    entrypoint: >
+      /bin/sh -lc "set -e; echo waiting for services...; for i in $(seq 1 60); do if curl -fsS http://schema-registry:8081/subjects >/dev/null 2>&1 && curl -fsS http://ksqldb-server:8088/info >/dev/null 2>&1; then break; fi; sleep 2; done; echo checking ksqlDB RUNNING status for derived queries...; consec=0; for i in $(seq 1 120); do body='{\"ksql\":\"SHOW QUERIES;\"}'; resp=$(curl -fsS -H 'Content-Type: application/vnd.ksql.v1+json; charset=utf-8' -H 'Accept: application/vnd.ksql.v1+json' -d \"$body\" http://ksqldb-server:8088/ksql || true); echo \"$resp\" | grep -qi BAR_TBIMP_1M_LIVE && echo \"$resp\" | grep -qi RUNNING && echo \"$resp\" | grep -qi BAR_TBIMP_5M_LIVE && echo \"$resp\" | grep -qi RUNNING && consec=$((consec+1)) || consec=0; if [ $consec -ge 3 ]; then break; fi; sleep 3; done; echo extra settle wait 60s...; sleep 60; dotnet test -c Release physicalTests/Kafka.Ksql.Linq.Tests.Integration.csproj --filter FullyQualifiedName~TimeBucketImportTumblingTests --logger 'trx;LogFileName=physical_runner.trx' --results-directory /src/reports/physical"
