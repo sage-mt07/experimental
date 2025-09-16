@@ -1,36 +1,35 @@
-# 足生成クイックスタート: 利用者向け
-このガイドは Tick から複数タイムフレームの足を最短手順で生成するための実践メモです。
+# Bar Generation Quickstart for Practitioners
+This memo shows how to generate multi-timeframe bars from ticks with the shortest possible workflow.
 
-想定読者
-- Kafka や ksqlDB を実運用で扱っている開発者を想定しています。
-- 実装の細部より動かす手順を重視する方向けです。
+Target readers
+- Engineers who already operate Kafka and ksqlDB in production.
+- People who prioritize running the flow over digging into implementation details.
 
-できることの概要
-- Tick から複数タイムフレームの足を一括生成できます（例: 1m/5m/15m/1h/1d）。
-- MarketSchedule（営業日カレンダー）と結合して、日/週の境界を安定させられます。
-- 集計仕様として OHLC（始値・高値・安値・終値）などを `Select` に明示してそのまま実行できます。
-- Table を RocksDB（内部ストレージ）にマテリアライズし、
-  `ToListAsync()` で高速に取得できます。
+What you can do
+- Generate multiple bar timeframes from ticks in one pass (for example 1m/5m/15m/1h/1d).
+- Stabilize day/week boundaries by joining with a MarketSchedule (business calendar).
+- Declare OHLC aggregations inside `Select` and run them as-is.
+- Materialize tables into RocksDB (internal storage) and fetch them quickly with `ToListAsync()`.
 
-5ステップで動作を確認する
-1) 接続先を設定する
-- Kafka / ksqlDB / Schema Registry を起動しておきます。
-- `appsettings.json` に最低限の接続先を設定します。
+## Verify in five steps
+1) Configure endpoints
+- Start Kafka / ksqlDB / Schema Registry.
+- Set the minimum endpoints in `appsettings.json`:
   - `KsqlDsl:Common:BootstrapServers`
   - `KsqlDsl:SchemaRegistry:Url`
   - `KsqlDsl:KsqlDbUrl`
 
-2) Context を作成し接続できる状態にする
+2) Build the context and connect
 ```csharp
 var cfg = new ConfigurationBuilder()
-  .AddJsonFile("appsettings.json") // 接続先設定を読み込む
+  .AddJsonFile("appsettings.json") // load connection settings
   .Build();
 var ctx = KsqlContextBuilder.Create()
-  .UseConfiguration(cfg) // 読み込んだ接続設定を適用
+  .UseConfiguration(cfg)            // apply configuration
   .BuildContext<MyAppContext>();
 ```
 
-3) Rate をトピック "rates" に関連づける
+3) Map `Rate` to topic `rates`
 ```csharp
 [KsqlTopic("rates")]
 public class Rate
@@ -42,7 +41,7 @@ public class Rate
 }
 ```
 
-4) 日/週の境界を含む複数足を定義する
+4) Define multiple bars including day/week boundaries
 ```csharp
 modelBuilder.Entity<Bar>().ToQuery(q => q
   .From<Rate>()
@@ -64,56 +63,55 @@ modelBuilder.Entity<Bar>().ToQuery(q => q
   }));
 ```
 
-5) 送受信を確かめる
-- Stream と Table 共通で送信します。
+5) Send and receive
+- Send through the stream/table using the same API.
 ```csharp
 await ctx.Set<Rate>().AddAsync(new Rate {
   Broker = "B1", Symbol = "S1", Timestamp = DateTime.UtcNow, Bid = 100
 });
 ```
-- Stream は `ForEachAsync()` で購読して受信します。
+- Consume the stream with `ForEachAsync()`.
 ```csharp
 await ctx.Set<Bar>().ForEachAsync(b => { Console.WriteLine(b.Symbol); return Task.CompletedTask; });
 ```
-- Table は RocksDB から `ToListAsync()` で取得します。
+- Fetch the table from RocksDB with `ToListAsync()`.
 ```csharp
 var list = await ctx.Set<Bar>().ToListAsync();
 ```
 
-使うときのポイント
-実装時に押さえておくポイントをまとめました。
-- `Select` には `g.WindowStart()` を1回だけ入れます。重複するとエラーです。
-- 日足以上を作る場合は `dayKey` を付けます。これは同一営業日を識別するキー列です。
-- すべての足は基底の1秒足から直接生成します。例として5分足や15分足も1秒足から作ります。
-- 確定値 final と速報値 live は DAG（処理の流れ＝依存グラフ）を分けます。
-- 取得方式は、Table は `ToListAsync()`、Stream は `ForEachAsync()` で購読します。
-- 伝達時間は環境により変動します。通常は 50〜200ms、起動直後は 0.5〜3 秒が目安です。
-上記を押さえて典型的な検証エラーに備えてください。
+## Usage tips
+Keep these points in mind while coding:
+- Include `g.WindowStart()` exactly once inside `Select`. Duplicates trigger errors.
+- Add `dayKey` when creating daily-or-longer bars; it identifies the business day.
+- All bars derive directly from the 1-second base. Even 5m and 15m come from the 1-second parent.
+- Separate DAGs for finalized (`final`) and live (`live`) flows.
+- Use `ToListAsync()` for tables and `ForEachAsync()` for streams.
+- Latency varies by environment: usually 50–200 ms, 0.5–3 seconds right after startup.
 
-自動チェックと対処のコツ
-内部ルールの多くは自動で検証します。エラーが出たら次を確認してください。
-- 「Windowed query requires exactly one WindowStart()」
-  - 対処: Select に `g.WindowStart()` を1回だけ含めてください。重複や欠落に注意します。
-- 「Windows ≥ 1 minute must be whole-minute multiples」
-  - 対処: 1分以上の窓サイズは1分単位の整数倍にしてください。例: 1m, 5m, 15m。
-- 「Windows must be multiples of the base unit」などの窓サイズ系エラー
-  - 対処: 秒台の細かいサイズ指定を避け、1m/5m/15m/1h/1d など一般的なサイズを選びます。
-これで基礎的な検証エラーを防げます。続いて命名規約も確認してください。
+## Automatic checks and how to fix errors
+Internal rules catch most mistakes. When you see an error, check the following:
+- `Windowed query requires exactly one WindowStart()`
+  - Fix: include `g.WindowStart()` exactly once in `Select`. Watch for duplicates or omissions.
+- `Windows ≥ 1 minute must be whole-minute multiples`
+  - Fix: choose integer-minute sizes (for example 1m, 5m, 15m).
+- Other window-size errors (for example "Windows must be multiples of the base unit")
+  - Fix: avoid second-level sizes; use common values like 1m/5m/15m/1h/1d.
+Handle these and most validation errors disappear. Next review the naming rules.
 
-主な命名規約
-- 形式は `<entity>_<timeframe>_(live|final)` です。例: `bar_1m_live`, `bar_1d_live`。
-- timeframe は `s`=秒, `m`=分, `h`=時間, `d`=日, `mo`=月 です。
-- `1s_final` テーブルが上位足の親になります。
+## Naming rules
+- Format: `<entity>_<timeframe>_(live|final)` such as `bar_1m_live`, `bar_1d_live`.
+- Timeframe abbreviations: `s` seconds, `m` minutes, `h` hours, `d` days, `mo` months.
+- The `1s_final` table is the parent for higher frames.
 
-トラブル対策
-- 反映が遅い場合は、起動直後に数秒待機し、短いポーリングで再試行してください。
-- 期待件数が足りない場合は、`TimeFrame` の条件と `dayKey`、そして `WindowStart` の投影を確認してください。
-- `ToListAsync()` が例外になる場合は、対象が Stream の可能性があります。Table を対象にしてください。
+## Troubleshooting
+- If propagation is slow, wait a few seconds after startup and retry with short polling.
+- If counts look low, check the `TimeFrame` conditions, `dayKey`, and `WindowStart` projection.
+- If `ToListAsync()` throws, ensure the target is a table (streams do not support it).
 
-参考
-- 詳細は `docs/chart.md` を参照してください。
+Reference
+- See `docs/chart.md` for full detail.
 
-チェックリスト
-- `bar_1m_live` にレコードが入ること。
-- `ToListAsync()` で取得件数が 0 の場合は TimeFrame と `WindowStart()` を再確認。
-- `ksqlDB` の `SHOW TABLES` で `bar_1m_live` と `bar_1d_live` が表示される。
+Checklist
+- `bar_1m_live` receives records.
+- When `ToListAsync()` returns zero rows, revisit `TimeFrame` and `WindowStart()`.
+- `ksqlDB` `SHOW TABLES` lists `bar_1m_live` and `bar_1d_live`.

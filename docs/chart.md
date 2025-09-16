@@ -1,87 +1,84 @@
-# 足生成 DSL ガイド（日本語整理版）
+This document explains the bar-generation DSL from "What it can do" → "How it works" → "Operational cautions" so you can grasp the full picture quickly.
 
-このドキュメントは「何ができるか」→「どう動くか」→「何に注意するか」の順で、足生成 DSL の全体像をわかりやすく説明します。
-
-できること
-- Tick（レートやトレード）から、秒/分/時間/日/週/月の足を生成できる
-- 1 つのクエリで複数のタイムフレーム（例: 1m/5m/1h/1d）をまとめて宣言できる
-- MarketSchedule（営業日カレンダー）で日/週の境界を安定させられる
-- Table は RocksDB にマテリアライズされ、`ToListAsync()` で素早く参照できる
+Capabilities
+- Generate bars (candles) of second/minute/hour/day/week/month from ticks (rates or trades).
+- Declare multiple time frames (for example 1m/5m/1h/1d) in a single query.
+- Stabilize day/week boundaries by joining a MarketSchedule (business calendar).
+- Materialize tables into RocksDB via Streamiz and fetch them quickly with `ToListAsync()`.
 
 ---
 
-## 1. 全体像（まずここだけ読む）
+## 1. Big picture (read this first)
 
-処理フロー（上から下へ）
-- 入力: 取引時間外を除いたストリーム（例: `<raw>_filtered`）
-- スケジュール結合: `TimeFrame<MarketSchedule>(…, dayKey: …)` で「取引時間内だけ」を選び、日/週の境界を固定
-- 窓生成: `Tumbling(r => r.Timestamp, Windows{…}, grace: …)` で複数足を一括生成
-- 集計: `GroupBy(...).Select(...)` に書いた集計（例: OHLC）が、そのまま仕様になる
-- 欠損埋め（任意）: 連続化が必要な場合だけ `WhenEmpty` を書く
-- 出力: 実行側プロファイルで live/final の物理化・命名を決める（DSL には出ない）
+Processing flow (top to bottom)
+- Input: stream that already excludes off-hours (for example `<raw>_filtered`).
+- Schedule join: `TimeFrame<MarketSchedule>(…, dayKey: …)` filters to trading hours and fixes day/week boundaries.
+- Window generation: `Tumbling(r => r.Timestamp, Windows { … }, grace: …)` creates multiple bars at once.
+- Aggregation: whatever you place inside `GroupBy(...).Select(...)` becomes the specification (for example OHLC).
+- Gap fill (optional): only add `WhenEmpty` when you need dense sequences.
+- Output: runtime profiles decide the physical topics/tables for live/final (not exposed in the DSL).
 
-要点（前提）
-- すべての上位足は 1s_final からフラットに派生します（5m→15m の多段は使用しません）。
-- grace は「親 + 1 秒」で段階的に増やします（遅延到着を確実に取り込みます）。
-- Table は Streamiz により RocksDB へマテリアライズされ、`ToListAsync()` で参照できます。
+Assumptions
+- Every higher timeframe fans out **directly** from `1s_final`; no multi-hop rollups such as 5m → 15m.
+- Grace increases stepwise by "parent + 1 second" so late-arriving ticks are captured.
+- Tables are materialized through Streamiz into RocksDB; `ToListAsync()` reads from there.
 
-最小の書き方（順番：正）
-- From → TimeFrame → Tumbling → GroupBy → Select →（必要なら）WhenEmpty
+Minimal declaration order (must be followed)
+- `From` → `TimeFrame` → `Tumbling` → `GroupBy` → `Select` → (optional) `WhenEmpty`
 
-補足（順番の根拠）
-- TimeFrame() は「スケジュールでの絞り込み/境界確定」を行い、その後 Tumbling() で窓を張る。
-- Tumbling() が窓境界（WindowStart）を定義し、GroupBy()/Select() で OHLC 等の集計を定める。
+Why this order matters
+- `TimeFrame()` narrows the stream to trading hours and anchors the boundaries; `Tumbling()` places the windows afterward.
+- `Tumbling()` defines the bucket start (`WindowStart`). `GroupBy()/Select()` specify OHLC and other metrics.
 
-ポイント
-- From: 入力ストリーム（例: DedupRateRecord）を指定
-- TimeFrame: 営業時間の拘束が必要なときだけ。日足以上は `dayKey` を付ける
-- Tumbling: minutes/hours/days/months をまとめて指定できる
-- GroupBy: 主キー（例: Broker, Symbol）
-- Select: 集計仕様そのもの（ここに書いた内容が真実）
-- WhenEmpty: 欠損埋めをしたいときだけ書く
-  - 注意: WhenEmpty/Prev/Fill の連携には Select 内で WindowStart() を1回含めること（バケット列が必須）
+Key points
+- `From`: specify the input stream entity (for example `DedupRateRecord`).
+- `TimeFrame`: use only when you need trading-hour restrictions. Add `dayKey` for day-or-longer bars.
+- `Tumbling`: declare minutes/hours/days/months together.
+- `GroupBy`: list the primary key (for example `Broker`, `Symbol`).
+- `Select`: this block is the specification itself; nothing is hard-coded elsewhere.
+- `WhenEmpty`: only add when you need to fill gaps.
+  - Note: when using `WhenEmpty`/Prev/Fill, include `WindowStart()` exactly once inside `Select` (bucket column required).
 
-``` mermaid
-
+```mermaid
 flowchart TB
-  %% ============ 上流 ============
-  subgraph Upstream["上流（取引時間外除外）"]
+  %% ============ Upstream ============
+  subgraph Upstream["Upstream (outside trading hours already filtered)"]
     raw["<raw>"]
-    filtered["<raw>_filtered\nLINQ: Where(...) 等で取引時間外を除外"]
+    filtered["<raw>_filtered\nLINQ: Where(...) to exclude off-hours"]
     raw --> filtered
   end
 
   %% ============ DSL ============
-  subgraph DSL["C# アプリケーション / DSL (LINQ式ツリー)"]
-    TF["TimeFrame<MarketSchedule>\nLINQ: Join/Where(dayKey: MarketDate)"]
-    Tumble["Tumbling\nLINQ: Window式（複数足まとめて生成）"]
-    GroupBy["GroupBy(主キー)"]
-    Select["Select(OHLC 等の仕様)\nLINQ: EarliestByOffset/Max/Min/LatestByOffset"]
+  subgraph DSL["C# Application / DSL (LINQ expression tree)"]
+    TF["TimeFrame<MarketSchedule>\nLINQ: Join/Where (dayKey: MarketDate)"]
+    Tumble["Tumbling\nLINQ: Window declaration (generate many frames)"]
+    GroupBy["GroupBy (primary key)"]
+    Select["Select (OHLC spec)\nLINQ: EarliestByOffset/Max/Min/LatestByOffset"]
   end
   filtered --> TF --> Tumble --> GroupBy --> Select
 
-  %% ============ WhenEmpty（HB/Prev合流） ============
-  subgraph Fill["欠損埋めフロー（WhenEmpty 記述時のみ）"]
-    HB["HB: HeartBeat\n(Tumbling が次の WindowStart を提示)"]
-    Prev["Prev: 直近の確定レコード"]
-    Join["LEFT JOIN (HB × base series)\n不足バケット検出"]
-    Apply["WhenEmpty(prev, next)\n→ next を埋めて確定"]
+  %% ============ WhenEmpty (HB/Prev join) ============
+  subgraph Fill["Gap-filling flow (only when WhenEmpty is defined)"]
+    HB["HB: HeartBeat\n(Tumbling provides the next WindowStart)"]
+    Prev["Prev: most recent finalized record"]
+    Join["LEFT JOIN (HB × base series)\nDetect empty buckets"]
+    Apply["WhenEmpty(prev, next)\n→ fill next and finalize"]
   end
   Select -->|base series| Join
-  HB -.->|WindowStart 提示| Join
-  Prev -.->|前バケット値| Apply
+  HB -.->|WindowStart feed| Join
+  Prev -.->|Previous bucket value| Apply
   Join --> Apply
 
-  %% ============ 1s_final ハブ ============
-  subgraph Hub["確定 1 秒足ハブ"]
+  %% ============ 1s_final hub ============
+  subgraph Hub["1-second finalized hub"]
     final1s["bar_1s_final (TABLE)"]
-    final1s_s["bar_1s_final_s (STREAM)\n※上位足の唯一の親入力"]
+    final1s_s["bar_1s_final_s (STREAM)\nParent input for every higher timeframe"]
     final1s --> final1s_s
   end
   Apply -->|DDL/CSAS/CTAS| final1s
 
-  %% ============ 上位足（flat派生） ============
-  subgraph Live["上位足 (live系: EMIT CHANGES)"]
+  %% ============ Higher frames (flat derivation) ============
+  subgraph Live["Higher frames (live: EMIT CHANGES)"]
     m1["bar_1m_live"]
     m5["bar_5m_live"]
     m15["bar_15m_live"]
@@ -96,20 +93,20 @@ flowchart TB
   final1s_s --> d1
   final1s_s --> w1
 
-  %% ============ ローカルキャッシュ / 読み取り ============
-  subgraph Cache["ローカルキャッシュ / 読み取り"]
+  %% ============ Local cache / reads ============
+  subgraph Cache["Local cache / reads"]
     streamiz["Streamiz"]
-    rocks["RocksDB 状態ストア"]
-    timebucket["LINQ: TimeBucket(from,to[,keyPrefix])\n（時間範囲で取得／前方一致キーにも対応）\nctx.TimeBucket からも取得可能"]
+    rocks["RocksDB state store"]
+    timebucket["LINQ: TimeBucket(from,to[,keyPrefix])\nRange scan / prefix scan via ctx.TimeBucket"]
     streamiz --> rocks --> timebucket
   end
 
-  %% 並行するストリーム購読
-  subgraph StreamRead["ストリーム購読（ライブ）"]
-    pushpull["LINQ: ForEachAsync()/Push/Pull"]
+  %% Parallel stream reads
+  subgraph StreamRead["Live stream consumption"]
+    pushpull["LINQ: ForEachAsync() / Push / Pull"]
   end
 
-  %% live 出力→利用面へ
+  %% Live output -> consumers
   m1 --> streamiz
   m5 --> streamiz
   m15 --> streamiz
@@ -124,20 +121,16 @@ flowchart TB
   d1 --> pushpull
   w1 --> pushpull
 
-  %% ============ スタイル定義 ============
-  %% 色：緑=入力, 紫=DSL/変換, 青=DB/ストリーム, オレンジ=出力, 黄=WhenEmpty補助
+  %% Styles
   classDef in fill:#e9f7ef,stroke:#27ae60,color:#145a32;
   classDef dsl fill:#efe9fb,stroke:#8e44ad,color:#4a235a;
   classDef gen fill:#efe9fb,stroke:#8e44ad,color:#4a235a;
-  classDef db fill:#eaf2fb,stroke:#2980b9,color
+  classDef db fill:#eaf2fb,stroke:#2980b9,color:#1b4f72;
+```
 
+## 2. Detailed behavior (dig in here)
 
-
-``` 
-
-## 2. 処理の詳細（ここから深掘り）
-
-### 2.1 TimeFrame と dayKey（営業日の境界）
+### 2.1 TimeFrame and dayKey (business-day boundaries)
 ```csharp
 .TimeFrame<MarketSchedule>((r, s) =>
        r.Broker == s.Broker
@@ -145,12 +138,11 @@ flowchart TB
     && s.Open <= r.Timestamp && r.Timestamp < s.Close,
     dayKey: s => s.MarketDate)
 ```
-運用のコツ
-- スケジュール判定は上流で実施します（例: `<raw>_filtered` を作成して参照します）。
-- `dayKey` は「日/週/月などの境界を安定させる」ためのマーカーです。
-- 分/時間足では原則不要です（指定しても構いません）。
+Operational tips
+- Evaluate schedule checks upstream (for example produce `<raw>_filtered` first).
+- `dayKey` stabilizes day/week/month boundaries. It is optional for minute/hour bars.
 
-### 2.2 TimeFrame と Tumbling（複数足をまとめて宣言）
+### 2.2 TimeFrame and Tumbling (declare multiple bars together)
 ```csharp
 q.From<DedupRateRecord>()
  .TimeFrame<MarketSchedule>((r, s) =>
@@ -166,19 +158,19 @@ q.From<DedupRateRecord>()
      },
      grace: TimeSpan.FromMinutes(2))
 ```
-使いどころ
-- 1 回の宣言で複数の足をまとめて指定できます。
-- grace は実行側の解釈に委ねます（内部では「親 + 1 秒」で伝播します）。
-- 中間足や BaseUnit は非公開です（利用者が意識する必要はありません）。
+When to use
+- Declare many frames in one go.
+- Grace is interpreted by the runtime; internally it propagates as "parent + 1 second".
+- Intermediate frames and base units are internal; users never see them.
 
-### 2.3 GroupBy（主キー）
+### 2.3 GroupBy (primary key)
 ```csharp
 .GroupBy(r => new { r.Broker, r.Symbol })
 ```
-主キーの考え方
-- GroupBy キー + バケット列（WindowStart）が主キーになります。
+Concept
+- The GroupBy key plus the bucket column (`WindowStart`) form the primary key.
 
-### 2.4 GroupBy と Select（投影＝仕様）
+### 2.4 GroupBy + Select (projection = specification)
 ```csharp
 q.From<DedupRateRecord>()
  .TimeFrame<MarketSchedule>((r, s) => r.Broker == s.Broker && r.Symbol == s.Symbol && s.OpenTime <= r.Ts && r.Ts < s.CloseTime)
@@ -187,19 +179,19 @@ q.From<DedupRateRecord>()
  .Select(g => new OneMinuteCandle {
      Broker   = g.Key.Broker,
      Symbol   = g.Key.Symbol,
-     BarStart = g.WindowStart(),            // ← バケット列（“式”で認識、列名は任意）
+     BarStart = g.WindowStart(),            // bucket column (detected by expression; column name is free)
      Open  = g.EarliestByOffset(x => x.Bid),
      High  = g.Max(x => x.Bid),
      Low   = g.Min(x => x.Bid),
      Close = g.LatestByOffset(x => x.Bid)
  })
 ```
-作るときの注意
-- `g.WindowStart()` を必ず 1 回投影してください（列名は任意、式で識別します）。
-- OHLC などの定義はアプリ側で明示してください（固定ではありません）。
-- 派生段の投影は SELECT *（恒等）です。列名の固定や属性依存は行いません。
+Notes
+- Always project `g.WindowStart()` exactly once. Name is irrelevant; the analyzer looks at the expression.
+- OHLC definitions live entirely in your code; nothing is hard-coded elsewhere.
+- Derived stages use `SELECT *` (identity projection). Column names follow your DTO.
 
-### 2.5 WhenEmpty（必要なときだけ・欠損埋め）
+### 2.5 WhenEmpty (optional gap fill)
 ```csharp
 .WhenEmpty((previous, next) =>
 {
@@ -212,55 +204,54 @@ q.From<DedupRateRecord>()
     return next;
 })
 ```
-ポイント
-- WhenEmpty を記述したときだけ「連続化モード」になります（HB + LEFT JOIN + Fill）。
-- 記述しなければ疎のままです（デンス化しません）。
-- 欠損埋めの結果を上流（final）へ戻さないでください（循環禁止）。
+Highlights
+- When you add `WhenEmpty`, the DSL switches to "continuous mode" (HeartBeat + LEFT JOIN + Fill).
+- If you omit it, the series stays sparse.
+- Do **not** send gap-filled results back upstream (no cycles).
 
-### 2.6 Table キャッシュと ToListAsync（RocksDB）
-- Table は Streamiz により RocksDB にマテリアライズされます（StateStore）。
-- `ToListAsync()` は「RUNNING 待ち → ストア全件列挙」を実行します。
-- 前方一致フィルタは「NUL 区切りの文字列キー」で実現します。
-- 伝達時間の目安は、通常 50〜200ms、起動直後は 0.5〜3 秒です（環境依存）。
-- Stream ソースは `ToListAsync()` 非対応です（Push 購読を使用します）。
-
----
-
-## 3. 内部の前提（知っておくと安心）
-- 1s ハブ（= 1s_final）からフラットに派生します（5m→15m の多段は禁止です）。
-- BaseUnitSeconds は 60 の約数のみ有効です（内部で自動展開します）。
-- WindowStart は式で識別します（列名には依存しません）。
-- 実行モードや物理名はプロファイル側で決定します（DSL では非公開です）。
-- 欠損埋めの循環は禁止です（下流→上流へ戻しません）。
-- grace は「親 + 1 秒」で階段的に伝播します。
-
+### 2.6 Table cache and ToListAsync (RocksDB)
+- Tables are materialized by Streamiz into RocksDB state stores.
+- `ToListAsync()` waits for RUNNING then enumerates the store.
+- Prefix filters use NUL-delimited string keys.
+- Typical propagation time: 50–200 ms; 0.5–3 s right after startup (environment dependent).
+- Streams do not support `ToListAsync()`; use push consumption instead.
 
 ---
 
-## 4. バリデーション（自動チェック）
-- BaseUnitSeconds は 60 の約数
-- ウィンドウは BaseUnitSeconds の倍数（1m 以上は分の整数倍）
-- grace は「親+1秒」を満たす
-- よくあるエラー
-  - Base unit must divide 60 seconds.
-  - Windows ≥ 1 minute must be whole-minute multiples.
-  - Windowed query requires exactly one WindowStart() in projection.
+## 3. Internal assumptions (good to know)
+- Every higher frame derives flatly from `1s_final` (no 5m → 15m chains).
+- `BaseUnitSeconds` must divide 60; the runtime expands multiples automatically.
+- `WindowStart` is identified by the expression, not the column name.
+- Execution mode and physical names live in the profile (outside the DSL).
+- Gap-fill cycles are forbidden (never feed downstream data back upstream).
+- Grace propagates as "parent + 1 second".
 
 ---
 
-## 5. 代表シナリオ（複数足を一括生成）
-- 秒/分/時間/日/月を一括宣言（1s_final ハブに一本化）
-- 欠損埋めが必要な時だけ WhenEmpty を付ける
+## 4. Validation (automatic checks)
+- `BaseUnitSeconds` must divide 60.
+- Window sizes must be multiples of `BaseUnitSeconds` (≥1 minute must be whole minutes).
+- Grace must satisfy the "parent + 1 second" rule.
+- Common errors:
+  - `Base unit must divide 60 seconds.`
+  - `Windows ≥ 1 minute must be whole-minute multiples.`
+  - `Windowed query requires exactly one WindowStart() in projection.`
 
 ---
 
-## 6. 1m→5m ロールアップ（設計/検証）
+## 5. Representative scenario (generate many bars at once)
+- Declare seconds/minutes/hours/days/months at once with a single `1s_final` hub.
+- Add `WhenEmpty` only for series that require gap filling.
 
-### 6.1 設計（同一ソースから 1m/5m をフラット派生）
-実装は「From → TimeFrame（任意）→ Tumbling → GroupBy → Select」。複数足は Windows でまとめて宣言します。
+---
+
+## 6. 1m → 5m rollup (design & verification)
+
+### 6.1 Design (flat derivation from the same source)
+Implementation pattern: `From → TimeFrame (optional) → Tumbling → GroupBy → Select`. Use `Windows` to declare multiple frames.
 
 ```csharp
-// 例: DedupRateRecord (Ts, Broker, Symbol, Bid)
+// Example: DedupRateRecord (Ts, Broker, Symbol, Bid)
 b.Entity<Candle1m>().ToQuery(q => q
     .From<DedupRateRecord>()
     .Tumbling(r => r.Ts, new Windows { Minutes = new[] { 1 } })
@@ -290,16 +281,16 @@ b.Entity<Candle5m>().ToQuery(q => q
     }));
 ```
 
-ポイント
-- 1m/5m は 1s_final からフラットに派生（多段ロールアップは行わない）
-- grace は親 + 1 秒で自動伝播（詳細は 2.2）
+Key points
+- 1m and 5m derive directly from `1s_final`; never chain rollups.
+- Grace propagates as "parent + 1 second" (see section 2.2).
 
-### 6.2 検証（1m の集約結果と 5m の一致を確認）
-アプリ側で 1m を 5m に再集約し、OHLC の一致をチェックします。
+### 6.2 Verification (confirm 1m aggregation equals the 5m table)
+Re-aggregate the 1m bars in the application and compare the OHLC values with the 5m table.
 
 ```csharp
-// 前提: ctx.Set<Candle1m>().ToListAsync(), ctx.Set<Candle5m>().ToListAsync() で
-//       同一期間・同一銘柄の 1m/5m を取得済み
+// Precondition: retrieved ctx.Set<Candle1m>().ToListAsync() and ctx.Set<Candle5m>().ToListAsync()
+// for the same period and symbol.
 
 static DateTime FloorTo5Min(DateTime dt)
 {
@@ -324,7 +315,7 @@ foreach (var b5 in fiveMin.OrderBy(x => x.BarStart))
         mismatches.Add($"[missing] no 1m group for 5m {b5.BarStart:HH:mm}");
         continue;
     }
-    bool eq(decimal a, decimal b) => a == b; // 設計上は厳密一致
+    bool eq(decimal a, decimal b) => a == b; // design expects exact equality
     if (!eq(b5.Open, roll.Open) || !eq(b5.High, roll.High) || !eq(b5.Low, roll.Low) || !eq(b5.Close, roll.Close))
     {
         mismatches.Add($"[mismatch] 5m {b5.BarStart:HH:mm} O:{b5.Open}/{roll.Open} H:{b5.High}/{roll.High} L:{b5.Low}/{roll.Low} C:{b5.Close}/{roll.Close}");
@@ -337,60 +328,58 @@ else
     foreach (var m in mismatches) Console.WriteLine(m);
 ```
 
-TimeBucket を使った取得（ctx 経由）
-
+### Using TimeBucket via the context
 ```csharp
-// KsqlContext ctx; Broker/Symbol は主キー
+// KsqlContext ctx; Broker/Symbol compose the primary key
 var one = await ctx.TimeBucket.Get<Bar>(Period.Minutes(1))
     .ToListAsync(new[]{ broker, symbol }, CancellationToken.None);
 var five = await ctx.TimeBucket.Get<Bar>(Period.Minutes(5))
     .ToListAsync(new[]{ broker, symbol }, CancellationToken.None);
 ```
 
-補足
-- 上記の検証は examples/rollup-1m-5m-verify に近い内容です。
-- 実際の検証では取引時間の拘束や WhenEmpty による補完有無を加味してください。
+Notes
+- The sample mirrors `examples/rollup-1m-5m-verify`.
+- In real validations include trading-hour constraints and whether `WhenEmpty` is active.
 
 ---
 
-## 6. 拡張ポイント
-- Aggregation Policy（例: VWAP, Volume, Trades）
-- MarketSchedule（dayKey = MarketDate など）
-- 命名/物理化は実行プロファイルで管理（DSL には出さない）
+## 6. Extension points
+- Aggregation policies (for example VWAP, Volume, Trades).
+- MarketSchedule (for example `dayKey = MarketDate`).
+- Naming and physical materialization live in the runtime profile; the DSL stays neutral.
 
 ---
 
-## 7. テストの観点（サクッと）
-- `WindowStart()` が1回だけ含まれるか
-- バリデーション（BaseUnit、倍数、分単位、循環検出）
-- 合成ロジックの一貫性（1m→上位）
-- 日足以上は dayKey の境界そろえ
+## 7. Test considerations (quick list)
+- Ensure `WindowStart()` appears exactly once.
+- Validation covers base unit, multiples, minute requirements, and cycle detection.
+- Confirm rollup consistency (1m → higher).
+- For daily-or-longer frames, align `dayKey` boundaries.
 
 ---
 
-## 8. 禁則（NG 集）
-- `.EmitChanges()` / `.AsFinal()` など内部モードを匂わせない
-- `.ToSink("…")` など物理名を DSL に露出しない
-- 5m→15m の多段ロールアップは禁止（常に 1s_final から）
-- 確定系列に Hopping を混在させない（速報系は別DAGに）
+## 8. Prohibited patterns
+- Do not expose internal modes such as `.EmitChanges()` or `.AsFinal()`.
+- Do not reveal physical names inside the DSL (for example `.ToSink("...")`).
+- No chained rollups (5m → 15m); always derive from `1s_final`.
+- Do not mix hopping windows into finalized series (keep live alerts in a separate DAG).
 
-## 9. 命名規約（覚えどころ）
+## 9. Naming rules (memorize these)
+- **Table/topic name format**: `<entity>_<timeframe>_(live|final)`
+  - Examples: `bar_1s_final`, `bar_1m_live`, `bar_5m_live`, `bar_1d_live`
+  - Timeframe codes: `s` = seconds, `m` = minutes, `h` = hours, `d` = days, `mo` = months
+  - `live`/`final` indicate aggregation mode
+  - `filteredraw`/`nontrading_raw`: reference `<raw_stream>_filtered` (created upstream)
+- `1s_final` is the single parent for every higher timeframe.
 
-- **テーブル/トピック名**: `<entity>_<timeframe>_(live|final)`
-  - 例: `bar_1s_final`, `bar_1m_live`, `bar_5m_live`, `bar_1d_live`
-  - timeframe: `s`=秒, `m`=分, `h`=時間, `d`=日, `mo`=月
-  - live/final: 集計モードの明示
-  - filteredraw/nontrading_raw: `<raw_stream>_filtered` を参照（生成は上流責務）
-- 1s_final は全上位足の唯一の親
-
-1s_final / 1s_final_s（役割）
-- 1s_final: EMIT FINAL の 1 秒確定足（TABLE）
-- 1s_final_s: 1s_final を STREAM 化した入力専用の親
-- ルール: 上位足は常に `<entity>_1s_final_s` を入力にする
+`1s_final` / `1s_final_s` roles
+- `1s_final`: EMIT FINAL 1-second table.
+- `1s_final_s`: STREAM view of `1s_final`; the only parent input for derived bars.
+- Rule: higher frames always consume `<entity>_1s_final_s`.
 
 ---
 
-## 10. 付録: 最小サンプル（コピペで雰囲気を掴む）
+## 10. Appendix: minimal sample (copy & adapt)
 ```csharp
 EventSet<Rate>()
   .From<DeDupRates>()
@@ -420,16 +409,16 @@ EventSet<Rate>()
         Close = g.LatestByOffset(x => x.Bid)
     })
 
-    //.WhenEmpty((prev, next) => { /* 任意で欠損埋め */ return next; })
+    //.WhenEmpty((prev, next) => { /* optional gap fill */ return next; })
   );
 ```
 
-> 実行モード（live/final）や命名/物理化は実行プロファイルで決定（DSL には出さない）
-## TimeBucket API での取得・書き込み（DSLと併用）
+> Execution mode (live/final), naming, and physical deployment are decided by the runtime profile, not the DSL.
 
-Tumbling で生成された各足（1m/5m など）を、最短の API で読み書きできます。
+## Reading and writing via the TimeBucket API (works alongside the DSL)
+Use the shortest API path to read or write each tumbling frame (1m/5m, etc.).
 
-読み取り（1m/5m の例）:
+Read (1m/5m example):
 
 ```
 var one = await ctx.TimeBucket
@@ -441,7 +430,7 @@ var five = await ctx.TimeBucket
     .ToListAsync(new[] { broker, symbol, "2025-09-15T09:00:00Z" }, CancellationToken.None);
 ```
 
-書き込み（1m の例）:
+Write (1m example):
 
 ```
 await ctx.TimeBucket
@@ -449,7 +438,7 @@ await ctx.TimeBucket
     .AddAsync(new Bar { Broker = broker, Symbol = symbol, BucketStart = t, Open = 100m, High = 110m, Low = 95m, Close = 105m });
 ```
 
-注意:
-- ベース型に `[KsqlTopic("alias")]` を付与した場合、各足トピックは `alias_{period}_live`（1s は `alias_1s_final`）。
-- 取得は TableCache を利用した前方一致スキャン（Broker/Symbol/任意で BucketStart）。
-- Period は minutes 以上を使用してください。
+Notes:
+- If the base entity has `[KsqlTopic("alias")]`, derived topics become `alias_{period}_live` (1s becomes `alias_1s_final`).
+- Reads use the table cache with prefix scans (Broker/Symbol/optional BucketStart).
+- Period values must be minutes or longer.

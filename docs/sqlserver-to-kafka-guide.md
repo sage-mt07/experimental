@@ -109,11 +109,11 @@ earliest:milestone, m2, 00:00, 0m
 - See `docs/onmodelcreating_samples.md` for LINQ→KSQL samples.
 
 ## Common patterns (link list)
-- Simple filter + projection: `docs/onmodelcreating_samples.md#1-単純フィルタ＋投影（pullpushどちらでも）`
-- 2-stream JOIN with WITHIN: `docs/onmodelcreating_samples.md#2-2ストリームjoin（within-必須）`
-- GroupBy + aggregation (Push): `docs/onmodelcreating_samples.md#3-groupby＋集計（push配信）`
-- HAVING clause: `docs/onmodelcreating_samples.md#4-having-句で閾値を絞る`
-- Tumbling 1-minute window: `docs/onmodelcreating_samples.md#7-時間窓（tumbling-1分push）`
+- Simple filter + projection: `docs/onmodelcreating_samples.md#1-simple-filter--projection-works-for-pull-or-push`
+- 2-stream JOIN with WITHIN: `docs/onmodelcreating_samples.md#2-stream-stream-join-within-required`
+- GroupBy + aggregation (Push): `docs/onmodelcreating_samples.md#3-groupby--aggregation-push-delivery`
+- HAVING clause: `docs/onmodelcreating_samples.md#4-having-clause-for-thresholds`
+- Tumbling 1-minute window: `docs/onmodelcreating_samples.md#7-time-window-1-minute-tumbling-push`
 
 ## Success checklist
 - Added `.Within(...)` to JOINs to specify time constraints.

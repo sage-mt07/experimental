@@ -1,8 +1,8 @@
-# OnModelCreating サンプル集
+# OnModelCreating Sample Catalog
 
-`modelBuilder.Entity<T>().ToQuery(...)` を使った ksqlDB クエリ定義の最小サンプルです。実務でよく使う形だけを厳選して記載します。
+This page lists minimal `modelBuilder.Entity<T>().ToQuery(...)` examples for defining ksqlDB queries. It focuses on patterns you will use frequently in production.
 
-## 1. 単純フィルタ＋投影（Pull/Pushどちらでも）
+## 1. Simple filter + projection (works for Pull or Push)
 ```csharp
 modelBuilder.Entity<ActiveOrder>().ToQuery(q => q
     .From<Order>()
@@ -10,7 +10,7 @@ modelBuilder.Entity<ActiveOrder>().ToQuery(q => q
     .Select(o => new ActiveOrder { Id = o.Id, Amount = o.Amount }));
 ```
 
-## 2. 2ストリームJOIN（WITHIN 必須）
+## 2. Stream-stream JOIN (WITHIN required)
 ```csharp
 modelBuilder.Entity<OrderPayment>().ToQuery(q => q
     .From<Order>()
@@ -19,7 +19,7 @@ modelBuilder.Entity<OrderPayment>().ToQuery(q => q
     .Select((o, p) => new OrderPayment { OrderId = o.Id, Paid = p.Paid }));
 ```
 
-## 3. GroupBy＋集計（Push配信）
+## 3. GroupBy + aggregation (Push delivery)
 ```csharp
 modelBuilder.Entity<OrderStats>().ToQuery(q => q
     .From<Order>()
@@ -29,11 +29,11 @@ modelBuilder.Entity<OrderStats>().ToQuery(q => q
         CustomerId = g.Key,
         Total = g.Sum(x => x.Amount)
     })
-    // EMIT CHANGES は自動付与（Push 推論）
+    // EMIT CHANGES is inferred automatically (Push)
     );
 ```
 
-## 4. HAVING 句で閾値を絞る
+## 4. HAVING clause for thresholds
 ```csharp
 modelBuilder.Entity<BigCustomer>().ToQuery(q => q
     .From<Order>()
@@ -42,7 +42,7 @@ modelBuilder.Entity<BigCustomer>().ToQuery(q => q
     .Select(g => new BigCustomer { CustomerId = g.Key, Total = g.Sum(x => x.Amount) }));
 ```
 
-## 5. CASE（条件ラベル付け）
+## 5. CASE expression (labeling conditions)
 ```csharp
 modelBuilder.Entity<CustomerStatus>().ToQuery(q => q
     .From<Order>()
@@ -54,7 +54,7 @@ modelBuilder.Entity<CustomerStatus>().ToQuery(q => q
     }));
 ```
 
-## 6. DECIMAL 精度の固定（属性）
+## 6. Fix DECIMAL precision (attribute)
 ```csharp
 public class Order
 {
@@ -69,7 +69,7 @@ modelBuilder.Entity<OrderTotal>().ToQuery(q => q
     .Select(g => new OrderTotal { CustomerId = g.Key, Total = g.Sum(x => x.Amount) }));
 ```
 
-## 7. 時間窓（TUMBLING 1分、Push）
+## 7. Time window (1-minute tumbling, Push)
 ```csharp
 modelBuilder.Entity<MinuteSales>().ToQuery(q => q
     .From<Order>()
@@ -81,15 +81,14 @@ modelBuilder.Entity<MinuteSales>().ToQuery(q => q
         BucketStart = g.WindowStart(),
         Total = g.Sum(x => x.Amount)
     })
-    // EMIT CHANGES は自動付与（Push 推論）
+    // EMIT CHANGES is inferred automatically (Push)
     );
 ```
 
 ---
 
-成功確認チェックリスト
-
-- JOIN は `.Within(...)` を必ず付ける
-- 集計と非集計の混在は GROUP BY で解消（混在エラーはビルダーが検知）
-- DECIMAL は `[KsqlDecimal(p,s)]` で明示し、アプリとスキーマの精度を一致
-- Push/Pull の指定メソッドは廃止。GroupBy等は Push として自動的に `EMIT CHANGES` が付与され、TABLE系は Pull（`EMIT CHANGES` なし）。
+## Success checklist
+- Always add `.Within(...)` to JOINs.
+- Resolve mixed aggregate/non-aggregate columns with `GROUP BY` (the builder validates this).
+- Declare decimal precision with `[KsqlDecimal(p, s)]` to align schema and application.
+- Push/Pull-specific methods were removed. Aggregations (such as `GroupBy`) infer Push and add `EMIT CHANGES`, while TABLE projections remain Pull (no `EMIT CHANGES`).

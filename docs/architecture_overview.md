@@ -1,24 +1,24 @@
-## 🏗️ Architecture Overview（全体構造と各層の責務）
+## 🏗️ Architecture Overview (Layers and Responsibilities)
 
-本ドキュメントは Kafka.Ksql.Linq OSS の **内部設計ドキュメント** として、アーキテクチャ全体と各レイヤーの責務を明確化することを目的としています。
+This document is an **internal design reference** for the Kafka.Ksql.Linq OSS. It clarifies the overall architecture and the responsibilities of each layer.
 
-⚠️ DSL 利用者向けの概要ではなく、OSS 本体の改変・拡張に関わる開発者向け資料です。
+⚠️ It targets contributors who modify or extend the OSS itself. It is not a user-facing DSL overview.
 
 ---
 
-### 🗂️ 全体レイヤー一覧
-1. Application層
-2. Context定義層
-3. Entity Metadata管理層
-4. クエリ・ストリーム構成層
-5. Messaging層
-6. Kafka Streams API層
-7. Kafka / Schema Registry / ksqlDB 基盤層
+### 🗂️ Layer list
+1. Application layer
+2. Context definition layer
+3. Entity metadata management layer
+4. Query and stream composition layer
+5. Messaging layer
+6. Kafka Streams API layer
+7. Kafka / Schema Registry / ksqlDB platform layer
 
-### 📊 レイヤー構造図
+### 📊 Layer diagram
 ```mermaid
 graph TB
-    A[Application\nSet&lt;T&gt;() and OnModelCreating] --> B[Context Definition\nKsqlContext & KsqlModelBuilder\nMappingRegistry]
+    A[Application\nSet<T>() and OnModelCreating] --> B[Context Definition\nKsqlContext & KsqlModelBuilder\nMappingRegistry]
     B --> C[Entity Metadata Management\nMappingRegistry]
     C --> D[Query & Stream Composition\nLINQ→KSQL, KStream/KTable]
     D --> E[Messaging\nSerialization, DLQ]
@@ -26,20 +26,19 @@ graph TB
     F --> G[Kafka / Schema Registry / ksqlDB]
 ```
 
-### 🧱 レイヤー構造と責務
+### 🧱 Layer responsibilities
+| Layer | Primary responsibilities | Representative namespaces / classes |
+|-------|-------------------------|-------------------------------------|
+| Application layer | DSL usage (`KsqlContext` inheritance + `OnModelCreating` + `Set<T>()`) | `samples`, `src/Application` |
+| Context definition layer | DSL parsing and model construction (`KsqlContext`, `KsqlModelBuilder`, `MappingRegistry`) | `src/Core` |
+| Entity metadata management layer | Analyze POCO attributes and manage Kafka/Schema Registry settings via `MappingRegistry` | `src/Mapping` |
+| Query & stream composition layer | Parse LINQ, generate KSQL, build KStream/KTable topologies, handle windows, joins, finals | `src/Query`, `src/EventSet` |
+| Messaging layer | Serialize/deserialize messages, interface with DLQ, bridge to Kafka Streams | `src/Messaging` |
+| Kafka Streams API layer | Execute Kafka Streams topologies, send queries to ksqlDB | Streamiz.Kafka.Net |
+| Kafka / Schema Registry / ksqlDB platform layer | Cluster operations, schema management, KSQL runtime | Kafka, Schema Registry, ksqlDB |
 
-| レイヤー名                       | 主な責務概要                                                                 | 代表Namespace / 主なクラス |
-|----------------------------------|------------------------------------------------------------------------------|----------------------------|
-| Application層                   | DSL記述（`KsqlContext`継承 + `OnModelCreating` + `Set<T>()` 定義）          | `samples`, `src/Application` |
-| Context定義層                   | DSL解析とモデル構築（`KsqlContext`, `KsqlModelBuilder`, `MappingRegistry`） | `src/Core` |
-| Entity Metadata管理層           | POCO属性解析と `MappingRegistry` による Kafka/Schema Registry 設定管理     | `src/Mapping` |
-| クエリ・ストリーム構成層       | LINQ式解析、KSQL生成、KStream/KTable構成、Window処理、Join、Final出力など | `src/Query`, `src/EventSet` |
-| Messaging層                    | メッセージのシリアライズ/デシリアライズ、DLQ連携、Kafka Streams への橋渡し | `src/Messaging` |
-| Kafka Streams API層            | Kafka Streams トポロジ実行、ksqldb へのクエリ送信                          | Streamiz.Kafka.Net |
-| Kafka / Schema Registry / ksqlDB 基盤層 | クラスタ運用、スキーマ管理、KSQL 実行環境                     | Kafka, Schema Registry, ksqlDB |
-
-### 🔄 レイヤー間の典型的なデータフロー
-以下のシーケンス図は `Set<T>()` でのエンティティ登録から Kafka プラットフォームへの到達までの代表的な流れを示します。
+### 🔄 Typical flow across layers
+The sequence below shows a representative path from `Set<T>()` registration to the Kafka platform.
 
 ```mermaid
 sequenceDiagram
@@ -60,58 +59,51 @@ sequenceDiagram
     Streams->>Plat: Execute topology / send queries
 ```
 
-各レイヤーの詳細構造や主なクラスについては、`docs/namespaces/` 配下にて Namespace 単位で説明されます。
+Layer-specific structure and key classes are documented under `docs/namespaces/`.
 
 ---
 
-### 🔁 他ドキュメントとの関係
+### 🔁 Related documents
+- `docs_configuration_reference.md`: appsettings ↔ DSL mapping
+- `docs_advanced_rules.md`: operational constraints and design rationale
+- `dev_guide.md`: implementation rules for extending the DSL or adding features
+- `docs/namespaces/*.md`: responsibilities and extension points per namespace
 
-- `docs_configuration_reference.md` → DSLとappsettingsのマッピング解説
-- `docs_advanced_rules.md` → 運用時の制約と設計判断の背景
-- `dev_guide.md` → 機能追加・DSL拡張手順の実装ルール
-- `docs/namespaces/*.md` → 各層に対応するNamespaceごとの実装責務と拡張ポイント
-
----
-
-本ドキュメントは、設計構造の俯瞰と責務分離の理解を促すものであり、拡張時の出発点・索引として活用されます。
-
-※ 図解や依存関係マップは別紙予定
+This overview supports structural understanding and acts as the starting index when extending the system. Diagrams and dependency maps will be added separately.
 
 ---
 
-## POCO設計・PK運用・シリアライズ方針
+## POCO design, primary keys, and serialization policy
 
-本節では OSS における POCO 設計方針、PK 運用およびシリアライズ/デシリアライズのポリシーをまとめます。内容は [reports/20250708.txt](../reports/20250708.txt) をもとに、鏡花・楠木・広夢が整理しました。これらの変換は `Set<T>()` で登録されたエンティティを `MappingRegistry` が自動処理します。
+This section summarizes how the OSS handles POCO design, key management, and serialization/deserialization. It is based on [reports/20250708.txt](../reports/20250708.txt) and was organized by Hiromu with review from Kyōka and Kusunoki. `MappingRegistry` applies these rules automatically when you register entities through `Set<T>()`.
 
-### 1. POCO 設計原則
-- 業務 POCO は **純粋な業務データ構造** とし、キー指定用の属性は付与しない。
-- DB 都合やビジネスロジック都合で自由に設計し、Kafka の key schema を意識しない。
+### 1. POCO design principles
+- Business POCOs remain **pure business data structures**; do not attach key-related attributes.
+- Design them freely without worrying about Kafka key schema.
 
-### 2. PK 運用ルール
-- PK (key schema) は DTO/POCO の **プロパティ定義順** のみを基準に自動生成する。
-- `Key` 属性は設計・実装から除外し、複合キーの順序は DTO/POCO の定義順に従う。
-- キーに利用できる型は `int` `long` `string` `Guid` の4種類のみとし、その他は利用者側で変換する。
-- LINQ `group by` などで指定した論理 PK の順序と一致させる。
-- `GroupBy` や `Join` で生成されるキー順と DTO/POCO の定義順が一致しない場合、初期化時に `InvalidOperationException` を送出する。
-  エラーメッセージは **"GroupByキーの順序と出力DTOの定義順が一致していません。必ず同じ順序にしてください。"** とする。
+### 2. Primary-key rules
+- Key schema is derived purely from the **property declaration order** in the DTO/POCO.
+- Remove `Key` attributes; composite-key order follows the DTO property order.
+- Allowed key types: `int`, `long`, `string`, `Guid`. Convert others at the application level.
+- Align the key order with logical keys used in LINQ (`group by`, etc.).
+- If the key order from `GroupBy`/`Join` differs from the DTO property order, initialization throws `InvalidOperationException` with the message **"GroupBy key order must match the output DTO property order."**
 
-### 3. シリアライズ／デシリアライズ方針
-- POCO ⇔ key/value 構造体の変換は **完全自動** で実行する。
-- Produce 時は DTO/POCO から PK 部と Value 部を自動分離してシリアライズする。
-- Consume 時は Kafka から受信した key/value をデシリアライズし、 DTO/POCO に再構成する。
-- シリアライザ／デシリアライザは型・スキーマ毎にキャッシュし性能を確保する。
+### 3. Serialization / deserialization policy
+- POCO ↔ key/value struct conversions are fully automated.
+- Produce: automatically split DTOs into key and value parts and serialize them.
+- Consume: deserialize Kafka key/value pairs and reconstruct the DTO/POCO.
+- Cache serializers/deserializers per type/schema for performance.
 
-### 4. 運用上のポイント
-- 以上の方針は全ドキュメント・ガイドに明記し、チーム全員で遵守する。
-- 進捗や課題があれば天城（PM）へ随時エスカレーションする。
+### 4. Operational notes
+- Document these policies across all guides and ensure the whole team follows them.
+- Escalate progress or issues to Amagi (PM) as needed.
 
-作成: 広夢 / 監修: 鏡花・楠木
+Prepared by Hiromu / Reviewed by Kyōka & Kusunoki
 
-### 関連ドキュメント
+### Related documents
 - [getting-started.md](./getting-started.md)
 - [docs_advanced_rules.md](./docs_advanced_rules.md)
-- [Set<T>() から Messaging までの利用ストーリー](./architecture/entityset_to_messaging_story.md)
+- [Story: From Set<T>() to Messaging](./architecture/entityset_to_messaging_story.md)
 - [Key-Value Flow Architecture (POCO ↔ Kafka)](./architecture/key_value_flow.md)
-- [Query -> KsqlContext -> Mapping/Serialization Flow](./architecture/query_ksql_mapping_flow.md)
+- [Query → KsqlContext → Mapping/Serialization Flow](./architecture/query_ksql_mapping_flow.md)
 - [Query to AddAsync Flow Sample](./architecture/query_to_addasync_sample.md)
-
