@@ -27,28 +27,70 @@ public static class KsqlHelpers
     }
 
     /// <summary>
-    /// Wait until ksqlDB /info endpoint responds, then optionally wait a grace period.
+    /// Wait until ksqlDB is stable: /healthcheck ready and SHOW QUERIES responds cleanly
+    /// for a given number of consecutive times, then optionally wait a settle period.
     /// </summary>
-    public static async Task WaitForKsqlReadyAsync(string ksqlBaseUrl, TimeSpan? timeout = null, int graceMs = 0)
+    public static async Task WaitForKsqlStableAsync(string ksqlBaseUrl, int consecutiveOk = 5, TimeSpan? timeout = null, int settleMs = 0)
     {
-        var end = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(60));
-        using var http = new HttpClient();
-        var url = ksqlBaseUrl.TrimEnd('/') + "/info";
-        while (DateTime.UtcNow < end)
+        var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(120));
+        using var http = new HttpClient { BaseAddress = new Uri(ksqlBaseUrl.TrimEnd('/')) };
+
+        // Phase 1: /healthcheck consecutive OK
+        var consec = 0;
+        while (DateTime.UtcNow < deadline)
         {
             try
             {
-                using var resp = await http.GetAsync(url);
+                using var resp = await http.GetAsync("/healthcheck");
                 if ((int)resp.StatusCode >= 200 && (int)resp.StatusCode < 300)
                 {
-                    if (graceMs > 0) await Task.Delay(graceMs);
-                    return;
+                    consec++;
+                    if (consec >= consecutiveOk) break;
                 }
+                else consec = 0;
             }
-            catch { }
-            await Task.Delay(1000);
+            catch { consec = 0; }
+            await Task.Delay(2000);
         }
-        throw new TimeoutException($"ksqlDB not ready: {url}");
+        if (consec < consecutiveOk)
+            throw new TimeoutException("ksqlDB /healthcheck did not stabilize in time");
+
+        // Phase 2: SHOW QUERIES returns array and no error, consecutive OK
+        consec = 0;
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                var payload = new { ksql = "SHOW QUERIES;", streamsProperties = new { } };
+                using var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                using var resp = await http.PostAsync("/ksql", content);
+                var body = await resp.Content.ReadAsStringAsync();
+                if ((int)resp.StatusCode >= 200 && (int)resp.StatusCode < 300
+                    && body.IndexOf("error", StringComparison.OrdinalIgnoreCase) < 0
+                    && body.IndexOf("exception", StringComparison.OrdinalIgnoreCase) < 0
+                    && body.TrimStart().StartsWith("["))
+                {
+                    consec++;
+                    if (consec >= consecutiveOk) break;
+                }
+                else consec = 0;
+            }
+            catch { consec = 0; }
+            await Task.Delay(2000);
+        }
+        if (consec < consecutiveOk)
+            throw new TimeoutException("ksqlDB SHOW QUERIES did not stabilize in time");
+
+        if (settleMs > 0)
+            await Task.Delay(settleMs);
+    }
+
+    /// <summary>
+    /// Backward-compatible: minimal readiness (uses /healthcheck) then optional grace period.
+    /// </summary>
+    public static async Task WaitForKsqlReadyAsync(string ksqlBaseUrl, TimeSpan? timeout = null, int graceMs = 0)
+    {
+        await WaitForKsqlStableAsync(ksqlBaseUrl, consecutiveOk: 3, timeout: timeout ?? TimeSpan.FromSeconds(90), settleMs: graceMs);
     }
 
     /// <summary>

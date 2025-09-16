@@ -13,6 +13,7 @@ internal class TableCacheRegistry : IDisposable
         _caches[type] = cache;
     }
 
+    // 元の簡易実装（no-op）に戻す
     public void RegisterEligibleTables(IEnumerable<EntityModel> models, HashSet<string> tableTopics)
     {
         // no-op for simplified registry

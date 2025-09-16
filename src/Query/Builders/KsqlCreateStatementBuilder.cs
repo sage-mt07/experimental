@@ -64,8 +64,10 @@ public static class KsqlCreateStatementBuilder
 
         var sb = new StringBuilder();
         sb.Append($"{createType} {streamName}");
-        // Emit AVRO formats; add only VALUE_AVRO_SCHEMA_FULL_NAME when provided (KEY_* is unsupported)
-        var withParts = new List<string> { $"KAFKA_TOPIC='{streamName}'", "KEY_FORMAT='AVRO'", "VALUE_FORMAT='AVRO'" };
+        // Emit AVRO formats. KEY_FORMAT はキー定義がある場合のみ付与する（キー無しだとエラーになる環境があるため）
+        var withParts = new List<string> { $"KAFKA_TOPIC='{streamName}'", "VALUE_FORMAT='AVRO'" };
+        if (AnySourceHasKeys(model))
+            withParts.Insert(1, "KEY_FORMAT='AVRO'");
         if (!string.IsNullOrWhiteSpace(valueSchemaFullName))
             withParts.Add($"VALUE_AVRO_SCHEMA_FULL_NAME='{valueSchemaFullName}'");
         sb.Append(" WITH (" + string.Join(", ", withParts) + ")");
@@ -95,6 +97,17 @@ public static class KsqlCreateStatementBuilder
         sb.AppendLine();
         sb.Append("EMIT CHANGES;");
         return sb.ToString();
+    }
+
+    private static bool AnySourceHasKeys(KsqlQueryModel model)
+    {
+        var types = model.SourceTypes ?? Array.Empty<Type>();
+        foreach (var t in types)
+        {
+            var keys = ExtractKeyNames(t);
+            if (keys != null && keys.Count > 0) return true;
+        }
+        return false;
     }
 
     private static string BuildFromClauseCore(KsqlQueryModel model, Func<Type, string>? sourceNameResolver)

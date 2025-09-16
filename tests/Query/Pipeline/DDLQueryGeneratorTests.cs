@@ -73,6 +73,22 @@ public class DDLQueryGeneratorTests
     }
 
     [Fact]
+    public void GenerateCreateStream_WithoutKeys_OmitsKeyFormat()
+    {
+        var model = new EntityModel
+        {
+            EntityType = typeof(TestEntity),
+            KeyProperties = Array.Empty<System.Reflection.PropertyInfo>(),
+            AllProperties = typeof(TestEntity).GetProperties(),
+            TopicName = "nokey"
+        };
+        var generator = new DDLQueryGenerator();
+        var query = ExecuteInScope(() => generator.GenerateCreateStream(new EntityModelDdlAdapter(model)));
+        Assert.DoesNotContain("KEY_FORMAT='AVRO'", query);
+        Assert.Contains("VALUE_FORMAT='AVRO'", query);
+    }
+
+    [Fact]
     public void GenerateCreateTable_IncludesKeyFormat()
     {
         var model = CreateEntityModel();

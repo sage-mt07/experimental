@@ -73,6 +73,12 @@ services:
       # Query timeout tuning
       KSQL_KSQL_QUERY_TIMEOUT_MS: "300000"               # 5 minutes
       KSQL_KSQL_QUERY_PULL_MAX_ALLOWED_OFFSET_LAG: "9223372036854775807"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8088/healthcheck"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
         
   schema-registry:
     image: confluentinc/cp-schema-registry:7.4.10
@@ -92,7 +98,8 @@ services:
   ksqldb-cli:
     image: confluentinc/cp-ksqldb-cli:7.4.10
     depends_on:
-      - ksqldb-server
+      ksqldb-server:
+        condition: service_healthy
     entrypoint: /bin/sh
     tty: true
 
@@ -104,7 +111,7 @@ services:
       schema-registry:
         condition: service_started
       ksqldb-server:
-        condition: service_started
+        condition: service_healthy
     working_dir: /src
     volumes:
       - ../:/src
@@ -112,5 +119,4 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KSQLDB_URL: http://ksqldb-server:8088
-    entrypoint: >
-      /bin/sh -lc "set -e; echo waiting for services...; for i in $(seq 1 60); do if curl -fsS http://schema-registry:8081/subjects >/dev/null 2>&1 && curl -fsS http://ksqldb-server:8088/info >/dev/null 2>&1; then break; fi; sleep 2; done; echo checking ksqlDB RUNNING status for derived queries...; consec=0; for i in $(seq 1 120); do body='{\"ksql\":\"SHOW QUERIES;\"}'; resp=$(curl -fsS -H 'Content-Type: application/vnd.ksql.v1+json; charset=utf-8' -H 'Accept: application/vnd.ksql.v1+json' -d \"$body\" http://ksqldb-server:8088/ksql || true); echo \"$resp\" | grep -qi BAR_TBIMP_1M_LIVE && echo \"$resp\" | grep -qi RUNNING && echo \"$resp\" | grep -qi BAR_TBIMP_5M_LIVE && echo \"$resp\" | grep -qi RUNNING && consec=$((consec+1)) || consec=0; if [ $consec -ge 3 ]; then break; fi; sleep 3; done; echo extra settle wait 60s...; sleep 60; dotnet test -c Release physicalTests/Kafka.Ksql.Linq.Tests.Integration.csproj --filter FullyQualifiedName~TimeBucketImportTumblingTests --logger 'trx;LogFileName=physical_runner.trx' --results-directory /src/reports/physical"
+    entrypoint: ["/bin/sh","-lc","/src/physicalTests/Runners/runner-entrypoint.sh"]

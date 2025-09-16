@@ -52,63 +52,63 @@ internal static class KsqlContextCacheExtensions
                 if (model == null)
                     continue;
 
-                var kv = mapping.GetMapping(model.EntityType);
                 var storeName = e.StoreName ?? model.GetTopicName();
                 var topic = model.GetTopicName();
-                var applicationId = $"{appIdBase}-{storeName}";
-                var stateDir = Path.Combine(Path.GetTempPath(), applicationId);
-
-                var builder = new StreamBuilder();
-                var materialized = CreateStringKeyMaterializedGeneric(kv.AvroValueType!, storeName);
-                StreamToStringKeyTableGeneric(builder, kv.AvroKeyType!, kv.AvroValueType!, topic, materialized, kv);
-
-                var config = CreateStreamConfigGeneric(kv.AvroKeyType!, kv.AvroValueType!, applicationId, bootstrap, schemaUrl, stateDir, loggerFactory);
-                var ks = new KafkaStream(builder.Build(), (IStreamConfig)config);
-                var wait = CreateWaitUntilRunning(ks);
-                var enumerateLazy = CreateEnumeratorLazyGeneric(typeof(string), kv.AvroValueType!, ks, storeName);
-
-                var cache = CreateTableCacheGeneric(model.EntityType, mapping, storeName, wait, enumerateLazy);
-
-                registry.Register(model.EntityType, cache);
-
-                ks.StartAsync();
+                RegisterCacheForModel(registry, mapping, model, storeName, topic, appIdBase, bootstrap, schemaUrl, loggerFactory);
             }
 
             // 2) Auto-register caches for derived TABLE entities (e.g., bar_{tf}_live)
             // This covers per-timeframe types used by TimeBucket<T>.
             foreach (var model in models.Values)
             {
-                // Identify derived TABLEs by AdditionalSettings markers
                 if (model.GetExplicitStreamTableType() != Kafka.Ksql.Linq.Query.Abstractions.StreamTableType.Table)
                     continue;
                 if (!(model.AdditionalSettings.ContainsKey("timeframe") && model.AdditionalSettings.ContainsKey("role")))
                     continue;
-
-                var kv = mapping.GetMapping(model.EntityType);
-                var storeName = model.GetTopicName(); // stable store per topic
+                var storeName = model.GetTopicName(); // stable per topic
                 var topic = model.GetTopicName();
-                var applicationId = $"{appIdBase}-{storeName}";
-                var stateDir = Path.Combine(Path.GetTempPath(), applicationId);
-
-                var builder = new StreamBuilder();
-                var materialized = CreateStringKeyMaterializedGeneric(kv.AvroValueType!, storeName);
-                StreamToStringKeyTableGeneric(builder, kv.AvroKeyType!, kv.AvroValueType!, topic, materialized, kv);
-
-                var config = CreateStreamConfigGeneric(kv.AvroKeyType!, kv.AvroValueType!, applicationId, bootstrap, schemaUrl, stateDir, loggerFactory);
-                var ks = new KafkaStream(builder.Build(), (IStreamConfig)config);
-                var wait = CreateWaitUntilRunning(ks);
-                var enumerateLazy = CreateEnumeratorLazyGeneric(typeof(string), kv.AvroValueType!, ks, storeName);
-
-                var cache = CreateTableCacheGeneric(model.EntityType, mapping, storeName, wait, enumerateLazy);
-
-                registry.Register(model.EntityType, cache);
-
-                ks.StartAsync();
+                RegisterCacheForModel(registry, mapping, model, storeName, topic, appIdBase, bootstrap, schemaUrl, loggerFactory);
             }
 
             context.AttachTableCacheRegistry(registry);
         }
     }
+
+    // Eligible table registration is delegated to TableCacheRegistry via configured registrar.
+
+    private static void RegisterCacheForModel(
+        TableCacheRegistry registry,
+        Mapping.MappingRegistry mapping,
+        EntityModel model,
+        string storeName,
+        string topic,
+        string appIdBase,
+        string bootstrap,
+        string schemaUrl,
+        ILoggerFactory? loggerFactory)
+    {
+        var kv = mapping.GetMapping(model.EntityType);
+        var applicationId = $"{appIdBase}-{storeName}";
+        var stateDir = Path.Combine(Path.GetTempPath(), applicationId);
+
+        var builder = new StreamBuilder();
+        var materialized = CreateStringKeyMaterializedGeneric(kv.AvroValueType!, storeName);
+        StreamToStringKeyTableGeneric(builder, kv.AvroKeyType!, kv.AvroValueType!, topic, materialized, kv);
+
+        var config = CreateStreamConfigGeneric(kv.AvroKeyType!, kv.AvroValueType!, applicationId, bootstrap, schemaUrl, stateDir, loggerFactory);
+        var ks = new KafkaStream(builder.Build(), (IStreamConfig)config);
+        var wait = CreateWaitUntilRunning(ks);
+        var enumerateLazy = CreateEnumeratorLazyGeneric(typeof(string), kv.AvroValueType!, ks, storeName);
+
+        var cache = CreateTableCacheGeneric(model.EntityType, mapping, storeName, wait, enumerateLazy);
+
+        registry.Register(model.EntityType, cache);
+
+        // Start (TableCache.ToListAsync handles RUNNING wait and retries)
+        ks.StartAsync();
+    }
+
+    // レジストラ生成ヘルパーは不要（元のシンプル実装に戻すため削除）
     private static Func<TimeSpan?, Task> CreateWaitUntilRunning(KafkaStream stream)
     {
         var running = false;

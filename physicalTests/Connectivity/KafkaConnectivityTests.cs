@@ -110,7 +110,8 @@ public class EnvKafkaConnectivityTests
     {
         await PhysicalTestEnv.Health.WaitForKafkaAsync(KafkaBootstrapServers, TimeSpan.FromSeconds(120));
         await PhysicalTestEnv.Health.WaitForHttpOkAsync($"{SchemaRegistryUrl}/subjects", TimeSpan.FromSeconds(120));
-        await PhysicalTestEnv.Health.WaitForHttpOkAsync($"{KsqlDbUrl}/info", TimeSpan.FromSeconds(120));
+        // Prefer robust ksqlDB stabilization: /healthcheck + SHOW QUERIES consecutive OK
+        await PhysicalTestEnv.KsqlHelpers.WaitForKsqlStableAsync(KsqlDbUrl, consecutiveOk: 5, timeout: TimeSpan.FromSeconds(180), settleMs: 30000);
     }
 
     private class BasicContext : KsqlContext

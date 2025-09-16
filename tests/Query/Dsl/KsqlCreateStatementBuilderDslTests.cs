@@ -3,6 +3,7 @@ using Kafka.Ksql.Linq.Query.Dsl;
 using System;
 using System.Linq;
 using Xunit;
+using Kafka.Ksql.Linq.Core.Attributes;
 
 namespace Kafka.Ksql.Linq.Tests.Query.Dsl;
 
@@ -10,6 +11,7 @@ public class KsqlCreateStatementBuilderDslTests
 {
     private class Order { public int Id { get; set; } public int CustomerId { get; set; } }
     private class Customer { public int Id { get; set; } public bool IsActive { get; set; } public string Name { get; set; } = string.Empty; }
+    private class KeyedOrder { [KsqlKey] public int Id { get; set; } public int CustomerId { get; set; } }
 
     [Fact]
     public void Build_WithJoinWhereSelect_GeneratesKsql()
@@ -26,7 +28,7 @@ public class KsqlCreateStatementBuilderDslTests
         Assert.Contains("JOIN Customer", sql);
         Assert.Contains("WHERE", sql);
         Assert.Contains("SELECT", sql);
-        Assert.Contains("KEY_FORMAT='AVRO'", sql);
+        Assert.DoesNotContain("KEY_FORMAT='AVRO'", sql); // no key attributes => omit KEY_FORMAT
         Assert.Contains("VALUE_AVRO_SCHEMA_FULL_NAME='com.acme.Value'", sql);
     }
 
@@ -54,10 +56,23 @@ public class KsqlCreateStatementBuilderDslTests
             .Build();
 
         var sql = KsqlCreateStatementBuilder.Build("orders", model, null, "com.acme.Value");
-        Assert.Contains("KEY_FORMAT='AVRO'", sql);
+        Assert.DoesNotContain("KEY_FORMAT='AVRO'", sql); // no key attributes => omit KEY_FORMAT
         Assert.DoesNotContain("KEY_AVRO_SCHEMA_FULL_NAME", sql);
         Assert.Contains("VALUE_AVRO_SCHEMA_FULL_NAME='com.acme.Value'", sql);
         Assert.DoesNotContain("PARTITION BY", sql);
+    }
+
+    [Fact]
+    public void Build_WithKeyedSource_IncludesKeyFormat()
+    {
+        var model = new KsqlQueryRoot()
+            .From<KeyedOrder>()
+            .Select(o => new { o.Id })
+            .Build();
+
+        var sql = KsqlCreateStatementBuilder.Build("keyed_orders", model, null, "com.acme.Value");
+        Assert.Contains("KEY_FORMAT='AVRO'", sql);
+        Assert.Contains("VALUE_AVRO_SCHEMA_FULL_NAME='com.acme.Value'", sql);
     }
 
     [Fact]

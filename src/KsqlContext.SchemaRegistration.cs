@@ -360,27 +360,9 @@ public abstract partial class KsqlContext
             Logger.LogInformation("KSQL DDL (query {Entity}): {Sql}", type.Name, ddl);
             await ExecuteWithRetryAsync(ddl);
 
-            var qs = await ExecuteStatementAsync("SHOW QUERIES;");
-            if (!qs.IsSuccess || string.IsNullOrWhiteSpace(qs.Message) || !QueryRunning(qs.Message))
-                throw new InvalidOperationException($"CTAS query for {model.GetTopicName()} not running");
-
+            await WaitForQueryRunningAsync(model.GetTopicName(), TimeSpan.FromSeconds(60));
             await AssertTopicPartitionsAsync(model);
             return;
-
-            bool QueryRunning(string message)
-            {
-                var lines = message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var line in lines)
-                {
-                    if (!line.Contains('|')) continue;
-                    var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 3 &&
-                        parts[1].Trim().Equals(model.GetTopicName(), StringComparison.OrdinalIgnoreCase) &&
-                        parts[3].Trim().Equals("RUNNING", StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-                return false;
-            }
         }
 
         var generator = new Kafka.Ksql.Linq.Query.Pipeline.DDLQueryGenerator();
@@ -494,43 +476,39 @@ public abstract partial class KsqlContext
 
     private async Task WaitForDerivedQueriesRunningAsync(TimeSpan timeout)
     {
-        var deadline = DateTime.UtcNow + timeout;
         // Collect derived entity names (those with timeframe/role markers)
         var targets = _entityModels.Values
             .Where(m => m.AdditionalSettings.ContainsKey("timeframe") && m.AdditionalSettings.ContainsKey("role"))
-            .Select(m => m.GetTopicName().ToUpperInvariant())
+            .Select(m => m.GetTopicName())
             .Distinct()
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (targets.Count == 0) return;
+            .ToList();
+        foreach (var t in targets)
+            await WaitForQueryRunningAsync(t, timeout);
+    }
 
+    private async Task WaitForQueryRunningAsync(string targetEntityName, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        var target = targetEntityName.ToUpperInvariant();
         while (DateTime.UtcNow < deadline)
         {
-            try
+            var qs = await ExecuteStatementAsync("SHOW QUERIES;");
+            if (qs.IsSuccess && !string.IsNullOrWhiteSpace(qs.Message))
             {
-                var qs = await ExecuteStatementAsync("SHOW QUERIES;");
-                if (qs.IsSuccess && !string.IsNullOrWhiteSpace(qs.Message))
+                var lines = qs.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
                 {
-                    var running = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    var lines = qs.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var line in lines)
-                    {
-                        if (!line.Contains('|')) continue;
-                        var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length > 3)
-                        {
-                            var entity = parts[1].Trim();
-                            var status = parts[3].Trim();
-                            if (status.Equals("RUNNING", StringComparison.OrdinalIgnoreCase))
-                                running.Add(entity);
-                        }
-                    }
-                    if (targets.All(t => running.Contains(t))) return;
+                    if (!line.Contains('|')) continue;
+                    var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 3 &&
+                        parts[1].Trim().Equals(target, StringComparison.OrdinalIgnoreCase) &&
+                        parts[3].Trim().Equals("RUNNING", StringComparison.OrdinalIgnoreCase))
+                        return;
                 }
             }
-            catch { }
             await Task.Delay(500);
         }
-        // Best-effort; continue even if not all queries reported RUNNING to avoid hard hangs in CI
+        throw new TimeoutException($"CTAS/CSAS query for {targetEntityName} did not reach RUNNING within {timeout.TotalSeconds}s");
     }
 
     /// <summary>
