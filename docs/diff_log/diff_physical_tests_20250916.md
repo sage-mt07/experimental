@@ -18,9 +18,14 @@
     - Phase3: セトリング 45 秒
     - Phase4: 軽いウォームアップ（任意、失敗は無視）
 
+- physicalTests/up.ps1
+  - ローカル起動用スクリプトにも同等の待機フェーズを導入：
+    - Phase1: Kafka(39092)/Schema Registry/ksqlDB health（連続5回）
+    - Phase2: `SHOW QUERIES` 連続5回
+    - Phase3: セトリング 45 秒
+
 期待効果:
 - 起動直後の不安定時間帯でのテスト着手を回避し、`PENDING_SHUTDOWN` 等に起因する揺らぎを低減。
 
 注意:
 - CI での所要時間は若干増加しますが、失敗再試行より総時間は短縮される想定です。
-
