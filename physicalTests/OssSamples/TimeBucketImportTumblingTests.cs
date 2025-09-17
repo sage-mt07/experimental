@@ -41,7 +41,12 @@ public class TimeBucketImportTumblingTests
 
     private sealed class TestContext : KsqlContext
     {
-        private static readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(b => b.AddConsole());
+        private static readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(b =>
+        {
+            b.SetMinimumLevel(LogLevel.Information);
+            b.AddFilter("Kafka.Ksql.Linq", LogLevel.Information);
+            b.AddConsole();
+        });
         public TestContext() : base(new KsqlDslOptions
         {
             // Resolve endpoints from environment when available (Docker runner),
@@ -114,6 +119,10 @@ public class TimeBucketImportTumblingTests
     [Trait("Category", "Integration")]
     public async Task Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()
     {
+        var queryTimeoutSeconds = Environment.GetEnvironmentVariable("KSQL_QUERY_RUNNING_TIMEOUT_SECONDS");
+        var timeout = TimeSpan.FromSeconds(
+            int.TryParse(queryTimeoutSeconds, out var seconds) && seconds > 0 ? seconds : 180);
+
         // Local RocksDB state may affect table materialization; clear it first
         try { PhysicalTestEnv.Cleanup.DeleteLocalRocksDbState(); } catch { }
         // Ensure env is ready (honor Docker runner env if set)
@@ -121,9 +130,9 @@ public class TimeBucketImportTumblingTests
         var srUrl = Environment.GetEnvironmentVariable("SCHEMA_REGISTRY_URL") ?? "http://127.0.0.1:18081";
         var ksqlUrl = Environment.GetEnvironmentVariable("KSQLDB_URL") ?? "http://127.0.0.1:18088";
 
-        await PhysicalTestEnv.Health.WaitForKafkaAsync(brokers, TimeSpan.FromSeconds(180));
-        await PhysicalTestEnv.Health.WaitForHttpOkAsync(srUrl.TrimEnd('/') + "/subjects", TimeSpan.FromSeconds(180));
-        await PhysicalTestEnv.KsqlHelpers.WaitForKsqlReadyAsync(ksqlUrl, TimeSpan.FromSeconds(180), graceMs: 3000);
+        await PhysicalTestEnv.Health.WaitForKafkaAsync(brokers, timeout);
+        await PhysicalTestEnv.Health.WaitForHttpOkAsync(srUrl.TrimEnd('/') + "/subjects", timeout);
+        await PhysicalTestEnv.KsqlHelpers.WaitForKsqlReadyAsync(ksqlUrl, timeout, graceMs: 3000);
         // Drop any previously created artifacts to avoid conflicts
         try { await PhysicalTestEnv.KsqlHelpers.TerminateAndDropBarArtifactsAsync(ksqlUrl); } catch { }
 
@@ -185,8 +194,8 @@ public class TimeBucketImportTumblingTests
 
         var live1m = "bar_tbimp_1m_live";
         var live5m = "bar_tbimp_5m_live";
-        var wait1mTask = QueryStreamCountHttpAsync(live1m, 1, TimeSpan.FromSeconds(180));
-        var wait5mTask = QueryStreamCountHttpAsync(live5m, 1, TimeSpan.FromSeconds(180));
+        var wait1mTask = QueryStreamCountHttpAsync(live1m, 1, timeout);
+        var wait5mTask = QueryStreamCountHttpAsync(live5m, 1, timeout);
 
         // Import a continuous sequence of ticks (~2 minutes) to ensure materialization
         var bids = new decimal[] { 100m, 110m, 95m, 105m, 120m, 115m, 112m, 118m };
@@ -199,7 +208,7 @@ public class TimeBucketImportTumblingTests
         }
 
         // Ensure derived tables exist before querying
-        await WaitTablesReadyAsync(new Uri(ksqlUrl), TimeSpan.FromSeconds(180));
+        await WaitTablesReadyAsync(new Uri(ksqlUrl), timeout);
         // Ensure push observers saw rows (materialization complete) before fetching via TimeBucket
         _ = await wait1mTask; _ = await wait5mTask;
 
@@ -355,3 +364,4 @@ public class TimeBucketImportTumblingTests
     }
     
 }
+

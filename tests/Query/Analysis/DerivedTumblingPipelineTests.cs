@@ -1,5 +1,6 @@
 using Kafka.Ksql.Linq.Core.Abstractions;
 using Kafka.Ksql.Linq.Core.Attributes;
+using Kafka.Ksql.Linq;
 using Kafka.Ksql.Linq.Query.Analysis;
 using Kafka.Ksql.Linq.Query.Dsl;
 using Kafka.Ksql.Linq.Mapping;
@@ -49,10 +50,10 @@ public class DerivedTumblingPipelineTests
             Windows = { "1m" }
         };
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql)
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
         {
             ddls.Add(sql);
-            return Task.CompletedTask;
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
         }
 
         var mapping = new MappingRegistry();
@@ -61,7 +62,7 @@ public class DerivedTumblingPipelineTests
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
 
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         Assert.Contains(ddls, s => s.StartsWith("CREATE TABLE bar_1s_final"));
         Assert.Contains(ddls, s => s.StartsWith("CREATE STREAM bar_1s_final_s"));
@@ -95,10 +96,10 @@ public class DerivedTumblingPipelineTests
         };
 
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql)
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
         {
             ddls.Add(sql);
-            return Task.CompletedTask;
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
         }
 
         var mapping = new MappingRegistry();
@@ -107,7 +108,7 @@ public class DerivedTumblingPipelineTests
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
 
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         var ddl5 = ddls.Single(s => s.Contains("_5m_live"));
         Assert.Contains("FROM bar_1s_final_s", ddl5);
@@ -155,10 +156,10 @@ public class DerivedTumblingPipelineTests
         Assert.NotNull(model.SelectProjection);
 
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql)
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
         {
             ddls.Add(sql);
-            return Task.CompletedTask;
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
         }
 
         var mapping = new MappingRegistry();
@@ -167,7 +168,7 @@ public class DerivedTumblingPipelineTests
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
 
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         var ddl = ddls.Single(s => s.StartsWith("CREATE TABLE bar_1m_live") || s.StartsWith("CREATE STREAM bar_1m_live"));
         Assert.Contains("FROM bar_1s_final_s", ddl);
@@ -198,10 +199,10 @@ public class DerivedTumblingPipelineTests
             Windows = { "1m", "5m" }
         };
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql)
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
         {
             ddls.Add(sql);
-            return Task.CompletedTask;
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
         }
         var mapping = new MappingRegistry();
         var registry = new ConcurrentDictionary<Type, EntityModel>();
@@ -209,7 +210,7 @@ public class DerivedTumblingPipelineTests
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
 
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         foreach (var sql in ddls.Where(s => s.Contains("_final")))
         {
@@ -217,3 +218,4 @@ public class DerivedTumblingPipelineTests
         }
     }
 }
+

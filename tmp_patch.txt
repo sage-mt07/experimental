@@ -1,0 +1,54 @@
+*** Begin Patch
+*** Update File: src/Query/Analysis/DerivedTumblingPipeline.cs
+@@
+-    public static async Task RunAsync(
++    public sealed record ExecutionResult(
++        EntityModel Model,
++        Role Role,
++        string Statement,
++        KsqlDbResponse Response,
++        string? InputTopic)
++    {
++        public bool HasPersistentQuery => Statement?.IndexOf(" AS ", StringComparison.OrdinalIgnoreCase) >= 0;
++    }
++
++    public static async Task<List<ExecutionResult>> RunAsync(
+         TumblingQao qao,
+         EntityModel baseModel,
+         KsqlQueryModel queryModel,
+-        Func<string, Task> execute,
++        Func<string, Task<KsqlDbResponse>> execute,
+         Func<string, Type> resolveType,
+         MappingRegistry mapping,
+         ConcurrentDictionary<Type, EntityModel> registry,
+         ILogger logger)
+     {
++        var executions = new List<ExecutionResult>();
+         var baseAttr = baseModel.EntityType.GetCustomAttribute<KsqlTopicAttribute>();
+         var baseName = (baseAttr?.Name ?? baseModel.TopicName ?? baseModel.EntityType.Name).ToLowerInvariant();
+         var entities = PlanDerivedEntities(qao, baseModel, queryModel.WhenEmptyFiller != null);
+         var models = AdaptModels(entities);
+@@
+-            var (ddl, dt, ns) = BuildDdlAndRegister(baseName, queryModel, m, role, resolveType);
++            var (ddl, dt, ns) = BuildDdlAndRegister(baseName, queryModel, m, role, resolveType);
+@@
+-            await execute(ddl);
++            var response = await execute(ddl);
++            executions.Add(new ExecutionResult(m, role, ddl, response, inputOverride));
+             // Register mapping using explicit shapes captured in AdditionalSettings
+             try
+             {
+@@
+         var dt = resolveType(name);
+         model.EntityType = dt;
+         model.TopicName = name;
+         model.SetStreamTableType(qm.DetermineType());
+         var ns = model.AdditionalSettings.TryGetValue("namespace", out var nsObj) ? nsObj?.ToString() : null;
+-        return (ddl, dt, ns);
++        return (ddl, dt, ns);
+     }
+@@
+-    }
++        return executions;
++    }
+*** End Patch

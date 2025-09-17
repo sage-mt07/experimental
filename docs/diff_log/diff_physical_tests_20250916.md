@@ -29,3 +29,14 @@
 
 注意:
 - CI での所要時間は若干増加しますが、失敗再試行より総時間は短縮される想定です。
+
+追加: ライブラリ待機の安定化（環境変数で制御可能）
+- src/KsqlContext.SchemaRegistration.cs
+  - `WaitForDerivedQueriesRunningAsync` 呼び出しを固定60sから `KSQL_QUERY_RUNNING_TIMEOUT_SECONDS` に切替（デフォルト60s）
+  - `WaitForQueryRunningAsync` を「連続成功＋安定性窓」方式に変更
+    - `KSQL_QUERY_RUNNING_CONSECUTIVE`（デフォルト5）
+    - `KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS`（デフォルト15）
+- physicalTests/docker-compose.yaml（runner環境）
+  - `KSQL_QUERY_RUNNING_TIMEOUT_SECONDS=180`
+  - `KSQL_QUERY_RUNNING_CONSECUTIVE=5`
+  - `KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS=15`

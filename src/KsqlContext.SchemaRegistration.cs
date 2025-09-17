@@ -13,11 +13,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Linq.Expressions;
+using System.Text.Json;
 using ConfluentSchemaRegistry = Confluent.SchemaRegistry;
-
 namespace Kafka.Ksql.Linq;
-
 public abstract partial class KsqlContext
 {
     private void InitializeWithSchemaRegistration()
@@ -27,10 +27,8 @@ public abstract partial class KsqlContext
         {
             RegisterSchemasAndMaterializeAsync().GetAwaiter().GetResult();
         }
-
         var tableTopics = _ksqlDbClient.GetTableTopicsAsync().GetAwaiter().GetResult();
         _cacheRegistry?.RegisterEligibleTables(_entityModels.Values, tableTopics);
-
         // Verify Kafka connectivity
         ValidateKafkaConnectivity();
         EnsureKafkaReadyAsync().GetAwaiter().GetResult();
@@ -41,11 +39,8 @@ public abstract partial class KsqlContext
         {
             // Auto-create DLQ topic
             await _adminService.EnsureDlqTopicExistsAsync();
-
             // Additional connectivity check (performed by AdminService)
             _adminService.ValidateKafkaConnectivity();
-
-
             // Log output: DLQ preparation complete
             Logger.LogInformation(
                 "Kafka initialization completed; DLQ topic '{Topic}' ready with {Retention}ms retention",
@@ -78,14 +73,12 @@ public abstract partial class KsqlContext
                 "FATAL: Cannot connect to Kafka. Verify bootstrap servers and network connectivity.", ex);
         }
     }
-
     /// <summary>
     /// Register schemas for all entities and send dummy record if newly created
     /// </summary>
     private async Task RegisterSchemasAndMaterializeAsync()
     {
         var client = _schemaRegistryClient.Value;
-
         // Pass 1: Register schemas for all entities
         var entities = _entityModels.ToArray();
         var schemaResults = new Dictionary<Type, SchemaRegistrationResult>();
@@ -94,7 +87,6 @@ public abstract partial class KsqlContext
             try
             {
                 var mapping = _mappingRegistry.GetMapping(type);
-
                 if (model.QueryModel == null && model.QueryExpression == null && model.HasKeys() && mapping.AvroKeySchema != null)
                 {
                     var keySubject = $"{model.GetTopicName()}-key";
@@ -102,7 +94,6 @@ public abstract partial class KsqlContext
                     var keySchema = Avro.Schema.Parse(mapping.AvroKeySchema);
                     model.KeySchemaFullName = keySchema.Fullname;
                 }
-
                 var valueSubject = $"{model.GetTopicName()}-value";
                 var valueResult = await client.RegisterSchemaIfNewAsync(valueSubject, mapping.AvroValueSchema!);
                 var valueSchema = Avro.Schema.Parse(mapping.AvroValueSchema!);
@@ -116,30 +107,23 @@ public abstract partial class KsqlContext
                 throw;
             }
         }
-
         // Pass 2: Ensure DDL for simple entities first
         foreach (var (type, model) in entities.Where(e => e.Value.QueryModel == null && e.Value.QueryExpression == null))
         {
             await EnsureSimpleEntityDdlAsync(type, model);
         }
-
         // Pass 3: Then ensure DDL for query-defined entities
         foreach (var (type, model) in entities.Where(e => e.Value.QueryModel != null || e.Value.QueryExpression != null))
         {
             await EnsureQueryEntityDdlAsync(type, model);
         }
-
     }
-
     /// <summary>
     /// Create topics and ksqlDB objects for an entity defined without queries.
     /// </summary>
     private async Task EnsureSimpleEntityDdlAsync(Type type, EntityModel model)
     {
-
-
         var generator = new Kafka.Ksql.Linq.Query.Pipeline.DDLQueryGenerator();
-
         var topic = model.GetTopicName();
         if (_dslOptions.Topics.TryGetValue(topic, out var config) && config.Creation != null)
         {
@@ -151,19 +135,15 @@ public abstract partial class KsqlContext
             model.Partitions = 1;
         if (model.ReplicationFactor <= 0)
             model.ReplicationFactor = 1;
-
         await _adminService.CreateDbTopicAsync(topic, model.Partitions, model.ReplicationFactor);
-
         // Wait for ksqlDB readiness briefly before issuing DDL
         await WaitForKsqlReadyAsync(TimeSpan.FromSeconds(15));
-
         string ddl;
         var schemaProvider = new Query.Ddl.EntityModelDdlAdapter(model);
         ddl = model.StreamTableType == StreamTableType.Table
             ? generator.GenerateCreateTable(schemaProvider)
             : generator.GenerateCreateStream(schemaProvider);
         Logger.LogInformation("KSQL DDL (simple {Entity}): {Sql}", type.Name, ddl);
-
         // Retry DDL with exponential backoff to tolerate ksqlDB command-topic warmup
         var attempts = 0;
         var maxAttempts = Math.Max(0, _dslOptions.KsqlDdlRetryCount) + 1; // include first try
@@ -173,7 +153,6 @@ public abstract partial class KsqlContext
             var result = await ExecuteStatementAsync(ddl);
             if (result.IsSuccess)
                 break;
-
             attempts++;
             var retryable = IsRetryableKsqlError(result.Message);
             if (!retryable || attempts >= maxAttempts)
@@ -186,11 +165,9 @@ public abstract partial class KsqlContext
             await _delay(TimeSpan.FromMilliseconds(delayMs), default);
             delayMs = Math.Min(delayMs * 2, 8000);
         }
-
         // Ensure the entity is visible to ksqlDB metadata before proceeding
         await WaitForEntityDdlAsync(model, TimeSpan.FromSeconds(12));
     }
-
     private async Task WaitForKsqlReadyAsync(TimeSpan timeout)
     {
         var start = DateTime.UtcNow;
@@ -206,7 +183,6 @@ public abstract partial class KsqlContext
             await Task.Delay(500);
         }
     }
-
     /// <summary>
     /// Ensure ksqlDB responds to a simple command within the timeout, or throw.
     /// Executes SHOW TOPICS in a loop, then performs one more SHOW TOPICS as a warmup.
@@ -231,7 +207,6 @@ public abstract partial class KsqlContext
         }
         throw new TimeoutException("ksqlDB warmup timed out while waiting for SHOW TOPICS to succeed.");
     }
-
     private static bool IsRetryableKsqlError(string? message)
     {
         if (string.IsNullOrWhiteSpace(message)) return true;
@@ -244,7 +219,6 @@ public abstract partial class KsqlContext
             || m.Contains("ksqldb server is not ready")
             || m.Contains("statement_error");
     }
-
     private static Type GetDerivedType(string name)
     {
         if (_derivedTypes.TryGetValue(name, out var t)) return t;
@@ -253,13 +227,11 @@ public abstract partial class KsqlContext
         _derivedTypes[name] = t;
         return t;
     }
-
     private async Task WaitForEntityDdlAsync(EntityModel model, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         var entity = model.GetTopicName().ToUpperInvariant();
         var stmt = $"DESCRIBE EXTENDED {entity};";
-
         while (DateTime.UtcNow < deadline)
         {
             try
@@ -278,7 +250,6 @@ public abstract partial class KsqlContext
             catch { }
             await Task.Delay(500);
         }
-
         static bool HasDescribeInfo(string message)
         {
             var lines = message.Split('\n');
@@ -290,13 +261,11 @@ public abstract partial class KsqlContext
             return hasKey && hasValue && hasTs && hasStats && hasSchema;
         }
     }
-
     private async Task AssertTopicPartitionsAsync(EntityModel model)
     {
         var res = await ExecuteStatementAsync("SHOW TOPICS;");
         if (!res.IsSuccess || string.IsNullOrWhiteSpace(res.Message))
             throw new InvalidOperationException("SHOW TOPICS failed");
-
         var lines = res.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
         {
@@ -312,67 +281,29 @@ public abstract partial class KsqlContext
         }
         throw new InvalidOperationException($"Topic {model.GetTopicName()} not found");
     }
-
     private async Task EnsureQueryEntityDdlAsync(Type type, EntityModel model)
     {
         if (model.QueryModel != null)
             RegisterQueryModelMapping(model);
-
         if (model.QueryModel?.HasTumbling() == true)
         {
-            var qao = BuildQao(model);
-            await DerivedTumblingPipeline.RunAsync(
-                qao,
-                model,
-                model.QueryModel,
-                ExecuteWithRetryAsync,
-                n => GetDerivedType(n),
-                _mappingRegistry,
-                _entityModels,
-                Logger);
-
-            // Ensure CTAS/CSAS queries for derived entities are RUNNING before proceeding
-            await WaitForDerivedQueriesRunningAsync(TimeSpan.FromSeconds(60));
+            await EnsureDerivedQueryEntityDdlAsync(type, model);
             return;
         }
-
         var isTable = model.GetExplicitStreamTableType() == StreamTableType.Table ||
             model.QueryModel?.DetermineType() == StreamTableType.Table;
-
         if (model.QueryModel?.DetermineType() == StreamTableType.Table)
-
         {
-            Func<Type, string> resolver = t =>
-            {
-                var key = t?.Name ?? string.Empty;
-                if (!string.IsNullOrEmpty(key) && _dslOptions.SourceNameOverrides is { Count: > 0 } && _dslOptions.SourceNameOverrides.TryGetValue(key, out var overrideName))
-                    return overrideName;
-                if (t != null && _entityModels.TryGetValue(t, out var srcModel))
-                    return srcModel.GetTopicName().ToUpperInvariant();
-                return key;
-            };
-            var ddl = Query.Builders.KsqlCreateStatementBuilder.Build(
-                model.GetTopicName(),
-                model.QueryModel,
-                model.KeySchemaFullName,
-                model.ValueSchemaFullName,
-                resolver);
-            Logger.LogInformation("KSQL DDL (query {Entity}): {Sql}", type.Name, ddl);
-            await ExecuteWithRetryAsync(ddl);
-
-            await WaitForQueryRunningAsync(model.GetTopicName(), TimeSpan.FromSeconds(60));
-            await AssertTopicPartitionsAsync(model);
+            await EnsureTableQueryEntityDdlAsync(type, model);
             return;
         }
-
         var generator = new Kafka.Ksql.Linq.Query.Pipeline.DDLQueryGenerator();
         var adapter = new EntityModelDdlAdapter(model);
         var ddlSql = isTable
             ? generator.GenerateCreateTable(adapter)
             : generator.GenerateCreateStream(adapter);
         Logger.LogInformation("KSQL DDL (query {Entity}): {Sql}", type.Name, ddlSql);
-        await ExecuteWithRetryAsync(ddlSql);
-
+        _ = await ExecuteWithRetryAsync(ddlSql);
         if (model.QueryModel != null)
         {
             Func<Type, string> resolver = t =>
@@ -386,10 +317,142 @@ public abstract partial class KsqlContext
             };
             var insert = Query.Builders.KsqlInsertStatementBuilder.Build(model.GetTopicName(), model.QueryModel, resolver);
             Logger.LogInformation("KSQL DDL (query {Entity}): {Sql}", type.Name, insert);
-            await ExecuteWithRetryAsync(insert);
+            _ = await ExecuteWithRetryAsync(insert);
         }
-
-        async Task ExecuteWithRetryAsync(string sql)
+        return;
+        async Task EnsureDerivedQueryEntityDdlAsync(Type entityType, EntityModel baseModel)
+        {
+            var attempts = GetPersistentQueryMaxAttempts();
+            var delay = TimeSpan.FromSeconds(5);
+            Exception? lastError = null;
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                var results = await DerivedTumblingPipeline.RunAsync(
+                    BuildQao(baseModel),
+                    baseModel,
+                    baseModel.QueryModel!,
+                    ExecuteDerivedAsync,
+                    n => GetDerivedType(n),
+                    _mappingRegistry,
+                    _entityModels,
+                    Logger);
+                var persistent = CollectPersistentExecutions(results);
+                try
+                {
+                    if (persistent.Count > 0)
+                        await StabilizePersistentQueriesAsync(persistent, baseModel, GetPersistentQueryTimeout(), default);
+                    await WaitForDerivedQueriesRunningAsync(GetQueryRunningTimeout());
+                    return;
+                }
+                catch (Exception ex) when (attempt + 1 < attempts)
+                {
+                    lastError = ex;
+                    Logger.LogWarning(ex, "Derived query stabilization failed for {Entity} (attempt {Attempt}/{Max})", entityType.Name, attempt + 1, attempts);
+                    await TerminateQueriesAsync(persistent);
+                    await Task.Delay(delay);
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    break;
+                }
+            }
+            throw lastError ?? new TimeoutException($"Derived query for {entityType.Name} did not stabilize.");
+            Task<KsqlDbResponse> ExecuteDerivedAsync(EntityModel m, string sql)
+                => ExecuteWithRetryAsync(sql);
+            List<PersistentQueryExecution> CollectPersistentExecutions(IReadOnlyList<DerivedTumblingPipeline.ExecutionResult> executions)
+            {
+                var list = new List<PersistentQueryExecution>();
+                foreach (var execution in executions)
+                {
+                    if (!execution.IsPersistentQuery)
+                        continue;
+                    if (TryExtractPersistentQueryId(execution.Response, out var queryId))
+                    {
+                        list.Add(new PersistentQueryExecution(
+                            queryId,
+                            execution.Model,
+                            execution.Model.GetTopicName(),
+                            execution.Statement,
+                            execution.InputTopic,
+                            true));
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Missing queryId in ksqlDB response for derived statement: {Statement}", execution.Statement);
+                    }
+                }
+                return list;
+            }
+        }
+        async Task EnsureTableQueryEntityDdlAsync(Type entityType, EntityModel tableModel)
+        {
+            Func<Type, string> resolver = t =>
+            {
+                var key = t?.Name ?? string.Empty;
+                if (!string.IsNullOrEmpty(key) && _dslOptions.SourceNameOverrides is { Count: > 0 } && _dslOptions.SourceNameOverrides.TryGetValue(key, out var overrideName))
+                    return overrideName;
+                if (t != null && _entityModels.TryGetValue(t, out var srcModel))
+                    return srcModel.GetTopicName().ToUpperInvariant();
+                return key;
+            };
+            var ddl = Query.Builders.KsqlCreateStatementBuilder.Build(
+                tableModel.GetTopicName(),
+                tableModel.QueryModel!,
+                tableModel.KeySchemaFullName,
+                tableModel.ValueSchemaFullName,
+                resolver);
+            Logger.LogInformation("KSQL DDL (query {Entity}): {Sql}", entityType.Name, ddl);
+            var attempts = GetPersistentQueryMaxAttempts();
+            var delay = TimeSpan.FromSeconds(5);
+            Exception? lastError = null;
+            for (var attempt = 0; attempt < attempts; attempt++)
+            {
+                var response = await ExecuteWithRetryAsync(ddl);
+                var persistent = CollectPersistentExecutions(response);
+                try
+                {
+                    if (persistent.Count > 0)
+                        await StabilizePersistentQueriesAsync(persistent, tableModel, GetPersistentQueryTimeout(), default);
+                    await WaitForQueryRunningAsync(tableModel.GetTopicName(), TimeSpan.FromSeconds(60));
+                    await AssertTopicPartitionsAsync(tableModel);
+                    return;
+                }
+                catch (Exception ex) when (attempt + 1 < attempts)
+                {
+                    lastError = ex;
+                    Logger.LogWarning(ex, "Persistent query stabilization failed for {Entity} (attempt {Attempt}/{Max})", entityType.Name, attempt + 1, attempts);
+                    await TerminateQueriesAsync(persistent);
+                    await Task.Delay(delay);
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    break;
+                }
+            }
+            throw lastError ?? new TimeoutException($"Persistent query for {entityType.Name} did not stabilize.");
+            List<PersistentQueryExecution> CollectPersistentExecutions(KsqlDbResponse response)
+            {
+                var list = new List<PersistentQueryExecution>();
+                if (TryExtractPersistentQueryId(response, out var queryId))
+                {
+                    list.Add(new PersistentQueryExecution(
+                        queryId,
+                        tableModel,
+                        tableModel.GetTopicName(),
+                        ddl,
+                        null,
+                        false));
+                }
+                else if (ddl.IndexOf(" AS ", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Logger.LogWarning("No queryId returned for CTAS statement executed for {Entity}", entityType.Name);
+                }
+                return list;
+            }
+        }
+        async Task<KsqlDbResponse> ExecuteWithRetryAsync(string sql)
         {
             var attempts = 0;
             var maxAttempts = Math.Max(0, _dslOptions.KsqlDdlRetryCount) + 1;
@@ -398,10 +461,10 @@ public abstract partial class KsqlContext
             {
                 var result = await ExecuteStatementAsync(sql);
                 if (result.IsSuccess)
-                    break;
+                    return result;
                 // Treat idempotent CREATE conflicts as success to avoid flakiness across runs
                 if (IsNonFatalCreateConflict(sql, result.Message))
-                    break;
+                    return new KsqlDbResponse(true, result.Message ?? string.Empty, result.ErrorCode, result.ErrorDetail);
                 attempts++;
                 var retryable = IsRetryableKsqlError(result.Message);
                 if (!retryable || attempts >= maxAttempts)
@@ -414,6 +477,7 @@ public abstract partial class KsqlContext
                 await _delay(TimeSpan.FromMilliseconds(delayMs), default);
                 delayMs = Math.Min(delayMs * 2, 8000);
             }
+            throw new InvalidOperationException("Unexpected DDL retry flow exited without result");
         }
 
         static bool IsNonFatalCreateConflict(string sql, string? message)
@@ -458,7 +522,6 @@ public abstract partial class KsqlContext
                 GraceSeconds = m.QueryModel!.GraceSeconds
             };
         }
-
         Timeframe ParseWindow(string w)
         {
             if (w.EndsWith("mo", StringComparison.OrdinalIgnoreCase))
@@ -469,11 +532,9 @@ public abstract partial class KsqlContext
             var value = int.Parse(w[..^1]);
             return new Timeframe(value, unit);
         }
-
         static string PropertyName(LambdaExpression? e) =>
             e?.Body is MemberExpression m ? m.Member.Name : string.Empty;
     }
-
     private async Task WaitForDerivedQueriesRunningAsync(TimeSpan timeout)
     {
         // Collect derived entity names (those with timeframe/role markers)
@@ -485,32 +546,312 @@ public abstract partial class KsqlContext
         foreach (var t in targets)
             await WaitForQueryRunningAsync(t, timeout);
     }
-
     private async Task WaitForQueryRunningAsync(string targetEntityName, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
         var target = targetEntityName.ToUpperInvariant();
+        var required = GetRequiredConsecutiveSuccess();
+        var stability = GetStabilityWindow();
+        var consecutive = 0;
         while (DateTime.UtcNow < deadline)
         {
             var qs = await ExecuteStatementAsync("SHOW QUERIES;");
             if (qs.IsSuccess && !string.IsNullOrWhiteSpace(qs.Message))
             {
                 var lines = qs.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                bool isRunning = false;
                 foreach (var line in lines)
                 {
                     if (!line.Contains('|')) continue;
                     var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 3 &&
-                        parts[1].Trim().Equals(target, StringComparison.OrdinalIgnoreCase) &&
-                        parts[3].Trim().Equals("RUNNING", StringComparison.OrdinalIgnoreCase))
-                        return;
+                    // Robust match: if the line contains the target topic and RUNNING state anywhere
+                    var lineUpper = line.ToUpperInvariant();
+                    if (lineUpper.Contains(target) && lineUpper.Contains("RUNNING"))
+                    {
+                        isRunning = true;
+                        break;
+                    }
+                    // Fallback to column-based match when available
+                    if (parts.Length > 3 && parts[1].Trim().Equals(target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var state = parts[3].Trim().ToUpperInvariant();
+                        if (state == "RUNNING") isRunning = true; else isRunning = false;
+                        break;
+                    }
+                }
+                if (isRunning)
+                {
+                    consecutive++;
+                    if (consecutive >= required)
+                    {
+                        // optional stability window
+                        if (stability > TimeSpan.Zero)
+                        {
+                            await Task.Delay(stability);
+                            // re-check once more
+                            var confirm = await ExecuteStatementAsync("SHOW QUERIES;");
+                            if (confirm.IsSuccess && !string.IsNullOrWhiteSpace(confirm.Message))
+                            {
+                                var confirmLines = confirm.Message.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                                foreach (var line in confirmLines)
+                                {
+                                    if (!line.Contains('|')) continue;
+                                    var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                                    var lineUpper = line.ToUpperInvariant();
+                                    if (lineUpper.Contains(target) && lineUpper.Contains("RUNNING")) { return; }
+                                    if (parts.Length > 3 && parts[1].Trim().Equals(target, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        var state = parts[3].Trim().ToUpperInvariant();
+                                        if (state == "RUNNING") return;
+                                        break;
+                                    }
+                                }
+                                // If fell out of RUNNING, reset and continue
+                                consecutive = 0;
+                            }
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    consecutive = 0;
                 }
             }
-            await Task.Delay(500);
+            await Task.Delay(2000);
         }
         throw new TimeoutException($"CTAS/CSAS query for {targetEntityName} did not reach RUNNING within {timeout.TotalSeconds}s");
     }
-
+    private static TimeSpan GetQueryRunningTimeout()
+    {
+        var env = Environment.GetEnvironmentVariable("KSQL_QUERY_RUNNING_TIMEOUT_SECONDS");
+        if (int.TryParse(env, out var seconds) && seconds > 0)
+            return TimeSpan.FromSeconds(seconds);
+        return TimeSpan.FromSeconds(180);
+    }
+    private static int GetRequiredConsecutiveSuccess()
+    {
+        var env = Environment.GetEnvironmentVariable("KSQL_QUERY_RUNNING_CONSECUTIVE");
+        if (int.TryParse(env, out var n) && n > 0) return n;
+        return 5; // default per physical stability guidance
+    }
+    private static TimeSpan GetStabilityWindow()
+    {
+        var env = Environment.GetEnvironmentVariable("KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS");
+        if (int.TryParse(env, out var seconds) && seconds >= 0)
+            return TimeSpan.FromSeconds(seconds);
+        return TimeSpan.FromSeconds(15);
+    }
+    private async Task StabilizePersistentQueriesAsync(
+        IReadOnlyList<PersistentQueryExecution> executions,
+        EntityModel? baseModel,
+        TimeSpan timeout,
+        CancellationToken cancellationToken)
+    {
+        if (_adminService == null || executions == null || executions.Count == 0)
+        {
+            Logger?.LogWarning("KafkaAdminService unavailable; skipping persistent query stabilization.");
+            return;
+        }
+        foreach (var execution in executions)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var parents = GetParentTopicCandidates(execution, baseModel);
+            var partitions = ResolveParentPartitions(parents, execution.TargetModel);
+            await EnsureInternalTopicsReadyAsync(execution, partitions, timeout, cancellationToken).ConfigureAwait(false);
+        }
+    }
+    private async Task TerminateQueriesAsync(IReadOnlyList<PersistentQueryExecution> executions)
+    {
+        if (executions == null || executions.Count == 0)
+            return;
+        foreach (var execution in executions)
+        {
+            try
+            {
+                var terminate = $"TERMINATE {execution.QueryId};";
+                var response = await ExecuteStatementAsync(terminate).ConfigureAwait(false);
+                if (!response.IsSuccess)
+                {
+                    Logger.LogWarning("Termination of query {QueryId} reported non-success: {Message}", execution.QueryId, response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to terminate query {QueryId}", execution.QueryId);
+            }
+        }
+    }
+    private IEnumerable<string> GetParentTopicCandidates(PersistentQueryExecution execution, EntityModel? baseModel)
+    {
+        var topics = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(execution.InputTopic))
+            topics.Add(execution.InputTopic!);
+        var target = execution.TargetModel;
+        if (target.QueryModel != null)
+        {
+            var sourceTypes = target.QueryModel.SourceTypes ?? Array.Empty<Type>();
+            foreach (var source in sourceTypes)
+            {
+                if (_entityModels.TryGetValue(source, out var srcModel))
+                {
+                    topics.Add(srcModel.GetTopicName());
+                    continue;
+                }
+                if (_dslOptions.SourceNameOverrides is { Count: > 0 } && _dslOptions.SourceNameOverrides.TryGetValue(source.Name, out var overrideName) && !string.IsNullOrWhiteSpace(overrideName))
+                {
+                    topics.Add(overrideName);
+                    continue;
+                }
+                topics.Add(source.Name.ToUpperInvariant());
+            }
+        }
+        else if (baseModel != null)
+        {
+            topics.Add(baseModel.GetTopicName());
+        }
+        return topics;
+    }
+        private int ResolveParentPartitions(IEnumerable<string> parentTopics, EntityModel fallbackModel)
+    {
+        foreach (var topic in parentTopics)
+        {
+            var candidate = topic?.Trim();
+            if (string.IsNullOrWhiteSpace(candidate))
+                continue;
+            var metadata = _adminService.TryGetTopicMetadata(candidate);
+            metadata ??= _adminService.TryGetTopicMetadata(candidate.ToLowerInvariant());
+            if (metadata?.Partitions != null && metadata.Partitions.Count > 0)
+                return metadata.Partitions.Count;
+        }
+        if (fallbackModel.Partitions > 0)
+            return fallbackModel.Partitions;
+        return 1;
+    }
+    private async Task EnsureInternalTopicsReadyAsync(PersistentQueryExecution execution, int partitions, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(execution.QueryId))
+            return;
+        if (partitions <= 0)
+            partitions = 1;
+        var (repartitionTopic, changelogTopic) = BuildInternalTopicNames(execution.QueryId);
+        await EnsureInternalTopicReadyAsync(repartitionTopic, partitions, timeout, cancellationToken).ConfigureAwait(false);
+        await EnsureInternalTopicReadyAsync(changelogTopic, partitions, timeout, cancellationToken).ConfigureAwait(false);
+    }
+    private async Task EnsureInternalTopicReadyAsync(string topicName, int partitions, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        var pollDelay = TimeSpan.FromSeconds(2);
+        var createDelay = TimeSpan.FromSeconds(6);
+        var creationThreshold = DateTime.UtcNow + createDelay;
+        var creationAttempted = false;
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var metadata = _adminService.TryGetTopicMetadata(topicName) ?? _adminService.TryGetTopicMetadata(topicName.ToLowerInvariant());
+            if (metadata?.Partitions != null && metadata.Partitions.Count > 0)
+            {
+                if (metadata.Partitions.Count != partitions)
+                {
+                    Logger.LogWarning("Internal topic {Topic} has {Actual} partitions, expected {Expected}", topicName, metadata.Partitions.Count, partitions);
+                }
+                return;
+            }
+            if (!creationAttempted && DateTime.UtcNow >= creationThreshold)
+            {
+                try
+                {
+                    await _adminService.CreateDbTopicAsync(topicName, partitions, 1).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Failed to create internal topic {Topic}", topicName);
+                }
+                creationAttempted = true;
+            }
+            await Task.Delay(pollDelay, cancellationToken).ConfigureAwait(false);
+        }
+        throw new TimeoutException($"Internal topic {topicName} was not ready within {timeout.TotalSeconds:F0}s");
+    }
+    private (string RepartitionTopic, string ChangelogTopic) BuildInternalTopicNames(string queryId)
+    {
+        var serviceId = _dslOptions.KsqlServer?.ServiceId;
+        if (string.IsNullOrWhiteSpace(serviceId))
+            serviceId = "ksql_service_1";
+        var prefix = _dslOptions.KsqlServer?.PersistentQueryPrefix;
+        if (string.IsNullOrWhiteSpace(prefix))
+            prefix = "query_";
+        var baseName = $"_confluent-ksql-{serviceId}{prefix}{queryId}-Aggregate-";
+        return ($"{baseName}GroupBy-repartition", $"{baseName}Aggregate-Materialize-changelog");
+    }
+    private static bool TryExtractPersistentQueryId(KsqlDbResponse response, out string queryId)
+    {
+        queryId = string.Empty;
+        if (string.IsNullOrWhiteSpace(response.Message))
+            return false;
+        try
+        {
+            using var document = JsonDocument.Parse(response.Message);
+            if (document.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    if (element.ValueKind != JsonValueKind.Object)
+                        continue;
+                    if (element.TryGetProperty("commandStatus", out var status) && status.ValueKind == JsonValueKind.Object)
+                    {
+                        if (status.TryGetProperty("queryId", out var idElement) && idElement.ValueKind == JsonValueKind.String)
+                        {
+                            var idValue = idElement.GetString();
+                            if (!string.IsNullOrWhiteSpace(idValue))
+                            {
+                                queryId = idValue;
+                                return true;
+                            }
+                        }
+                    }
+                    if (element.TryGetProperty("queryId", out var directId) && directId.ValueKind == JsonValueKind.String)
+                    {
+                        var idValue = directId.GetString();
+                        if (!string.IsNullOrWhiteSpace(idValue))
+                        {
+                            queryId = idValue;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // ignore parse errors, fallback to failure
+        }
+        return false;
+    }
+    private static int GetPersistentQueryMaxAttempts()
+    {
+        var env = Environment.GetEnvironmentVariable("KSQL_PERSISTENT_QUERY_MAX_ATTEMPTS");
+        if (int.TryParse(env, out var attempts) && attempts > 0)
+            return attempts;
+        return 3;
+    }
+    private static TimeSpan GetPersistentQueryTimeout()
+    {
+        var env = Environment.GetEnvironmentVariable("KSQL_PERSISTENT_QUERY_READY_TIMEOUT_SECONDS");
+        if (int.TryParse(env, out var seconds) && seconds > 0)
+            return TimeSpan.FromSeconds(seconds);
+        return TimeSpan.FromSeconds(45);
+    }
+    private sealed record PersistentQueryExecution(
+        string QueryId,
+        EntityModel TargetModel,
+        string TargetTopic,
+        string Statement,
+        string? InputTopic,
+        bool IsDerived);
     /// <summary>
     /// Register mapping information for a query-defined entity using its KsqlQueryModel.
     /// </summary>
@@ -518,11 +859,9 @@ public abstract partial class KsqlContext
     {
         if (model.QueryModel == null)
             return;
-
         var derivedType = model.QueryModel!.DetermineType();
         var isTable = model.GetExplicitStreamTableType() == StreamTableType.Table ||
             derivedType == StreamTableType.Table;
-
         // Ensure query-defined entities get the correct Stream/Table classification
         // so downstream components (e.g., cache enabling/resolution) behave correctly.
         model.SetStreamTableType(isTable ? StreamTableType.Table : StreamTableType.Stream);
@@ -533,8 +872,6 @@ public abstract partial class KsqlContext
             model.GetTopicName(),
             genericValue: isTable);
     }
-
-
     private static object CreateDummyInstance(Type entityType)
     {
         var method = typeof(Application.DummyObjectFactory).GetMethod("CreateDummy")!

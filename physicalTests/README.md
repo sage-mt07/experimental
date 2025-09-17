@@ -14,7 +14,7 @@ Key points about readiness and waiting:
 - Runner waiting sequence:
   - Wait until both Schema Registry (/subjects) and ksqlDB (/info) return HTTP 200, three times consecutively.
   - Warm up ksqlDB by calling SHOW QUERIES until responses show RUNNING three times consecutively.
-  - Sleep an extra 60s to absorb initial churn.
+  - Sleep an extra 180s to absorb initial churn.
 
 - Streamiz/State Store notes:
   - Tests query local state stores via Streamiz. If a query hits during thread transitions (e.g., PENDING_SHUTDOWN), the harness relies on built-in retries/timeouts.

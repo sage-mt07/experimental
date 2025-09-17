@@ -19,6 +19,9 @@ public class KsqlDslOptions
     [DefaultValue(typeof(CommonSection))]
     public CommonSection Common { get; init; } = new();
 
+    [DefaultValue(typeof(KsqlServerOptions))]
+    public KsqlServerOptions KsqlServer { get; init; } = new();
+
     /// <summary>
     /// Per-topic settings (manage producer/consumer settings per topic)
     /// </summary>

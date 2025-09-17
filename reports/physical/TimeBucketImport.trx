@@ -1,0 +1,392 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3baf39b5-5379-472f-866e-bde2aa74d945" name="seiji_yfc8940@SAGESOHO01 2025-09-17 11:40:33" runUser="SAGESOHO01\seiji_yfc8940" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-09-17T11:40:33.4774173+09:00" queuing="2025-09-17T11:40:33.4774178+09:00" start="2025-09-17T11:36:52.4720072+09:00" finish="2025-09-17T11:40:33.4824762+09:00" />
+  <TestSettings name="default" id="f6a4c875-c210-4cf7-80d8-fd4ec23a65d3">
+    <Deployment runDeploymentRoot="seiji_yfc8940_SAGESOHO01_2025-09-17_11_40_33" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="67a84555-7aa5-4937-8f9b-9223377efb37" testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" testName="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" computerName="SAGESOHO01" duration="00:03:40.2929711" startTime="2025-09-17T11:40:33.4091261+09:00" endTime="2025-09-17T11:40:33.4091432+09:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67a84555-7aa5-4937-8f9b-9223377efb37">
+      <Output>
+        <ErrorInfo>
+          <Message>System.TimeoutException : CTAS/CSAS query for bar_tbimp_1s_final did not reach RUNNING within 180s</Message>
+          <StackTrace>   at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 569&#xD;
+   at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 486&#xD;
+   at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 335&#xD;
+   at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync() in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 129&#xD;
+   at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration() in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 28&#xD;
+   at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory) in C:\dev\experimental\src\KsqlContext.cs:line 131&#xD;
+   at Kafka.Ksql.Linq.KsqlContext..ctor(KsqlDslOptions options, ILoggerFactory loggerFactory) in C:\dev\experimental\src\KsqlContext.cs:line 95&#xD;
+   at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.TestContext..ctor() in C:\dev\experimental\physicalTests\OssSamples\TimeBucketImportTumblingTests.cs:line 50&#xD;
+   at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket() in C:\dev\experimental\physicalTests\OssSamples\TimeBucketImportTumblingTests.cs:line 148&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" storage="c:\dev\experimental\physicaltests\bin\release\net8.0\kafka.ksql.linq.tests.integration.dll" id="d4f95360-fa20-03e1-5810-a5fd78838e0d">
+      <Execution id="67a84555-7aa5-4937-8f9b-9223377efb37" />
+      <TestMethod codeBase="C:\dev\experimental\physicalTests\bin\Release\net8.0\Kafka.Ksql.Linq.Tests.Integration.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests" name="Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" executionId="67a84555-7aa5-4937-8f9b-9223377efb37" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="一覧に存在しない結果" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="読み込まれたすべての結果" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.6+bf9b858c26 (64-bit .NET 8.0.19)&#xD;
+[xUnit.net 00:00:00.26]   Discovering: Kafka.Ksql.Linq.Tests.Integration&#xD;
+[xUnit.net 00:00:00.31]   Discovered:  Kafka.Ksql.Linq.Tests.Integration&#xD;
+[xUnit.net 00:00:00.31]   Starting:    Kafka.Ksql.Linq.Tests.Integration&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW TOPICS;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (simple Tick): CREATE OR REPLACE STREAM ticks_tbimp (Broker VARCHAR KEY, Symbol VARCHAR KEY, TimestampUtc TIMESTAMP, Bid DECIMAL(18, 2)) WITH (KAFKA_TOPIC='ticks_tbimp', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_tests_integration.ticks_tbimp_valueAvro', TIMESTAMP='TimestampUtc', PARTITIONS=1, REPLICAS=1);&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE OR REPLACE STREAM ticks_tbimp (Broker VARCHAR KEY, Symbol VARCHAR KEY, TimestampUtc TIMESTAMP, Bid DECIMAL(18, 2)...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW TOPICS;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (simple DlqEnvelope): CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc VARCHAR, IngestedAtUtc VARCHAR, PayloadFormatKey VARCHAR, PayloadFormatValue VARCHAR, SchemaIdKey VARCHAR, SchemaIdValue VARCHAR, KeyIsNull BOOLEAN, ErrorType VARCHAR, ErrorMessageShort VARCHAR, StackTraceShort VARCHAR, ErrorFingerprint VARCHAR, ApplicationId VARCHAR, ConsumerGroup VARCHAR, Host VARCHAR, Headers MAP&lt;STRING, STRING&gt;) WITH (KAFKA_TOPIC='dead-letter-queue', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_messaging.dead_letter_queue_valueAvro', PARTITIONS=1, REPLICAS=1);&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc ...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (derived bar_tbimp_1s_final): CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_valueAvro') AS&#xD;
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(Bid) AS Open, MAX(Bid) AS High, MIN(Bid) AS Low, LATEST_BY_OFFSET(Bid) AS Close&#xD;
+      FROM TICKS_TBIMP o WINDOW TUMBLING (SIZE 1 SECONDS)&#xD;
+      GROUP BY o.BROKER, o.SYMBOL&#xD;
+      EMIT FINAL;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AV...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (derived bar_tbimp_1s_final_s): CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, 2), HIGH DECIMAL(18, 2), LOW DECIMAL(18, 2), CLOSE DECIMAL(18, 2)) WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro');&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, ...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (derived bar_tbimp_1m_live): CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1m_live_valueAvro') AS&#xD;
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close&#xD;
+      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 1 MINUTES, GRACE PERIOD 2 SECONDS)&#xD;
+      GROUP BY o.BROKER, o.SYMBOL&#xD;
+      EMIT CHANGES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KSQL DDL (derived bar_tbimp_5m_live): CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_5m_live_valueAvro') AS&#xD;
+      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close&#xD;
+      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 5 MINUTES, GRACE PERIOD 3 SECONDS)&#xD;
+      GROUP BY o.BROKER, o.SYMBOL&#xD;
+      EMIT CHANGES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO...&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+info: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      ksql execute: EXECUTE SQL=SHOW QUERIES;&#xD;
+fail: Kafka.Ksql.Linq.KsqlContext[0]&#xD;
+      KsqlContext initialization failed: CTAS/CSAS query for bar_tbimp_1s_final did not reach RUNNING within 180s &#xD;
+      System.TimeoutException: CTAS/CSAS query for bar_tbimp_1s_final did not reach RUNNING within 180s&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 569&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 486&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model) in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 335&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync() in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 129&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration() in C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs:line 28&#xD;
+         at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory) in C:\dev\experimental\src\KsqlContext.cs:line 131&#xD;
+[xUnit.net 00:03:40.64]       System.TimeoutException : CTAS/CSAS query for bar_tbimp_1s_final did not reach RUNNING within 180s&#xD;
+[xUnit.net 00:03:40.64]       Stack Trace:&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs(569,0): at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout)&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs(486,0): at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout)&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs(335,0): at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model)&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs(129,0): at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync()&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.SchemaRegistration.cs(28,0): at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration()&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.cs(131,0): at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory)&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\src\KsqlContext.cs(95,0): at Kafka.Ksql.Linq.KsqlContext..ctor(KsqlDslOptions options, ILoggerFactory loggerFactory)&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\physicalTests\OssSamples\TimeBucketImportTumblingTests.cs(50,0): at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.TestContext..ctor()&#xD;
+[xUnit.net 00:03:40.64]         C:\dev\experimental\physicalTests\OssSamples\TimeBucketImportTumblingTests.cs(148,0): at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()&#xD;
+[xUnit.net 00:03:40.64]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:03:40.65]   Finished:    Kafka.Ksql.Linq.Tests.Integration&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="SAGESOHO01" outcome="Error" timestamp="2025-09-17T11:40:33.4073386+09:00">
+        <Text>[xUnit.net 00:03:40.64]     Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

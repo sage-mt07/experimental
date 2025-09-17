@@ -13,7 +13,10 @@ Kafka.Ksql.Linq is a C# library that unifies Kafka/ksqlDB and Avro/Schema Regist
 - Design type-safe schemas with Avro and Schema Registry.
 - Detect Streams/Tables and Pull/Push modes automatically.
 - Support operations with DLQ, retry, and commit helpers.
-
+**Market-schedule–aware OHLC bars (support feature):**
+   Generate OHLC bars (e.g., 1s/1m/5m/15m/1h) strictly aligned to exchange trading sessions.
+   The engine skips closed hours and holidays, handles DST correctly, and offers gap policies
+   (skip, carry-forward close, or emit sentinel). Pre-/post-market can be toggled per schedule.
 ---
 
 ## Quick start

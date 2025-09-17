@@ -32,10 +32,6 @@ services:
       KAFKA_REPLICA_FETCH_MAX_BYTES: 2147483647
       KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 2147483647
       KAFKA_SOCKET_SEND_BUFFER_BYTES: 2147483647
-      # CRITICAL FIX: Enable auto-topic creation
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_NUM_PARTITIONS: 1
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
     healthcheck:
       test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
       interval: 10s
@@ -63,98 +59,28 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
       KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      
-      # ===========================================
-      # 初期化処理最適化設定
-      # ===========================================
-      
-      # 並列処理強化（より積極的に設定）
-      KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 8
-      
-      # コミット間隔をさらに短縮
-      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "250"
-      
-      # CRITICAL: トピック作成タイムアウト延長
-      # KSQL_KSQL_STREAMS_TOPIC_CREATION_TIMEOUT_MS: "120000"
-      
-      # CRITICAL: クエリプランニングタイムアウト延長  
-      KSQL_KSQL_QUERY_PLANNING_TIMEOUT_MS: "180000"
-      
-      # クエリ起動の並列度向上
-      KSQL_KSQL_QUERY_PULL_TABLE_SCAN_ENABLED: "true"
-      
-      # ===========================================
-      # レイテンシ削減設定
-      # ===========================================
-      
-      # プロデューサー最適化
-      KSQL_KSQL_STREAMS_PRODUCER_LINGER_MS: "0"
-      KSQL_KSQL_STREAMS_PRODUCER_BATCH_SIZE: "1024"
-      
-      # コンシューマー最適化
-      KSQL_KSQL_STREAMS_CONSUMER_FETCH_MIN_BYTES: "1"
-      KSQL_KSQL_STREAMS_CONSUMER_FETCH_MAX_WAIT_MS: "100"
-      
-      # アイドル時間短縮
-      KSQL_KSQL_STREAMS_MAX_TASK_IDLE_MS: "100"
-      
-      # スレッド間バランス最適化
-      KSQL_KSQL_STREAMS_BUFFERED_RECORDS_PER_PARTITION: "100"
-      
-      # ===========================================
-      # 状態ストア最適化
-      # ===========================================
-      
-      # 状態ディレクトリ
-      KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"
-      
-      # ===========================================
-      # KSQL固有最適化
-      # ===========================================
-      
-      # レプリケーション設定
+      KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 2
+      KSQL_KSQL_STREAMS_COMMIT_INTERVAL_MS: "1000"
       KSQL_KSQL_STREAMS_REPLICATION_FACTOR: "1"
       KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: "1"
-      
-      # CRITICAL: シンクトピック設定
-      KSQL_KSQL_SINK_PARTITIONS: "1"
-      KSQL_KSQL_SINK_REPLICAS: "1"
-      
-      # CRITICAL: Kafka Streams内部トピック自動作成
-      KSQL_KSQL_STREAMS_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KSQL_KSQL_STREAMS_NUM_PARTITIONS: "1"
-      
-      # ストリームキャッシュ無効化（即伝播のため）
-      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "0"
-      
-      # ===========================================
-      # タイムアウト設定
-      # ===========================================
-      
-      # CRITICAL: クエリタイムアウト延長
-      KSQL_KSQL_QUERY_TIMEOUT_MS: "450000"               # 7.5分
-      KSQL_KSQL_QUERY_PULL_MAX_ALLOWED_OFFSET_LAG: "9223372036854775807"
-      
-      # ===========================================
-      # JVM最適化
-      # ===========================================
-      
-      # JVM設定（シンプル・安全）
-      KSQL_HEAP_OPTS: "-Xms3g -Xmx4g"
-      
-      # ===========================================
-      # ログ設定
-      # ===========================================
-      
-      # ログレベル（パフォーマンス重視）
+      # GC settings (optimize pause time)
+      KSQL_HEAP_OPTS: "-Xms3g -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=100"
+      # ksqlDBのメモリ関連設定
+      KSQL_KSQL_STREAMS_CACHE_MAX_BYTES_BUFFERING: "0"          # disable cache for tests
+      # RocksDBのメモリ設定
+      KSQL_KSQL_STREAMS_STATE_DIR: "/tmp/kafka-streams"  
+      # Logging: reduce verbosity for performance
       KSQL_LOG4J_ROOT_LOGLEVEL: INFO
-      
+      # KSQL_LOG4J_LOGGERS removed to avoid DEBUG noise
+      # Query timeout tuning
+      KSQL_KSQL_QUERY_TIMEOUT_MS: "300000"               # 5 minutes
+      KSQL_KSQL_QUERY_PULL_MAX_ALLOWED_OFFSET_LAG: "9223372036854775807"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8088/healthcheck"]
       interval: 3s
       timeout: 5s
       retries: 20
-      start_period: 90s
+      start_period: 60s
         
   schema-registry:
     image: confluentinc/cp-schema-registry:7.4.10
@@ -168,6 +94,8 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_HEAP_OPTS: "-Xms512m -Xmx2g"
+
+
 
   ksqldb-cli:
     image: confluentinc/cp-ksqldb-cli:7.4.10
@@ -194,8 +122,8 @@ services:
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KSQLDB_URL: http://ksqldb-server:8088
       KSQL_DDL_LOG_PATH: /src/reports/physical/ddl.log
-      # CRITICAL: タイムアウトを延長
-      KSQL_QUERY_RUNNING_TIMEOUT_SECONDS: 300
+      # Extend internal RUNNING wait for CTAS/CSAS (sec)
+      KSQL_QUERY_RUNNING_TIMEOUT_SECONDS: 180
       # Require consecutive RUNNING checks and stability window (sec)
       KSQL_QUERY_RUNNING_CONSECUTIVE: 5
       KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS: 15

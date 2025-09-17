@@ -1,5 +1,6 @@
 using Kafka.Ksql.Linq.Core.Abstractions;
 using Kafka.Ksql.Linq.Core.Attributes;
+using Kafka.Ksql.Linq;
 using Kafka.Ksql.Linq.Query.Analysis;
 using Kafka.Ksql.Linq.Query.Dsl;
 using Kafka.Ksql.Linq.Mapping;
@@ -47,10 +48,10 @@ public class DerivedTumblingPipelineConcurrencyTests
             Windows = { "1m", "5m" }
         };
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql)
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
         {
             ddls.Add(sql);
-            return Task.CompletedTask;
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
         }
         var mapping = new MappingRegistry();
         var registry = new ConcurrentDictionary<Type, EntityModel>();
@@ -60,7 +61,7 @@ public class DerivedTumblingPipelineConcurrencyTests
 
         // Enable WhenEmpty to include HB per timeframe
         model.WhenEmptyFiller = (System.Linq.Expressions.Expression<System.Func<int,int,int>>)((a,b) => a);
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         // WhenEmpty 有効化により、HB/Fill/Prev が追加されうるため件数は増加する。
         // 現仕様では: 1s (stream, final, hb) + 1m(live, hb, prev, fill) + 5m(live, hb, fill) = 10
@@ -72,3 +73,4 @@ public class DerivedTumblingPipelineConcurrencyTests
         Assert.Contains("EMIT FINAL", finals[0]);
     }
 }
+

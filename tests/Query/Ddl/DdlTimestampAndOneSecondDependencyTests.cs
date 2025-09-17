@@ -1,5 +1,6 @@
 using Kafka.Ksql.Linq.Core.Abstractions;
 using Kafka.Ksql.Linq.Core.Attributes;
+using Kafka.Ksql.Linq;
 using Kafka.Ksql.Linq.Mapping;
 using Kafka.Ksql.Linq.Query.Analysis;
 using Kafka.Ksql.Linq.Query.Ddl;
@@ -58,13 +59,13 @@ public class DdlTimestampAndOneSecondDependencyTests
         var baseModel = new EntityModel { EntityType = typeof(BaseEntity) };
         var model = new KsqlQueryModel { SourceTypes = new[] { typeof(BaseEntity) }, Windows = { "1m" } };
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql) { ddls.Add(sql); return Task.CompletedTask; }
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql) { ddls.Add(sql); return Task.FromResult(new KsqlDbResponse(true, string.Empty)); }
         var mapping = new MappingRegistry();
         var registry = new ConcurrentDictionary<Type, EntityModel>();
         var asm = AssemblyBuilder.DefineDynamicAssembly(new System.Reflection.AssemblyName("dyn"), AssemblyBuilderAccess.Run);
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         var tbl = ddls.First(s => s.StartsWith("CREATE TABLE bar_1s_final", StringComparison.OrdinalIgnoreCase));
         var str = ddls.First(s => s.StartsWith("CREATE STREAM bar_1s_final_s", StringComparison.OrdinalIgnoreCase));
@@ -74,3 +75,4 @@ public class DdlTimestampAndOneSecondDependencyTests
         Assert.Contains("KAFKA_TOPIC='bar_1s_final'", str, StringComparison.OrdinalIgnoreCase);
     }
 }
+

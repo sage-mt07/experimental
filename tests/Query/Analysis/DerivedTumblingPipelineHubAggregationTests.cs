@@ -1,5 +1,6 @@
 using Kafka.Ksql.Linq.Core.Abstractions;
 using Kafka.Ksql.Linq.Core.Attributes;
+using Kafka.Ksql.Linq;
 using Kafka.Ksql.Linq.Mapping;
 using Kafka.Ksql.Linq.Query.Analysis;
 using Kafka.Ksql.Linq.Query.Dsl;
@@ -23,13 +24,13 @@ public class DerivedTumblingPipelineHubAggregationTests
         var baseModel = new EntityModel { EntityType = typeof(HubAggSource) };
         var model = new KsqlQueryModel { SourceTypes = new[] { typeof(HubAggSource) }, Windows = { "1m", "5m" } };
         var ddls = new ConcurrentBag<string>();
-        Task Exec(string sql) { ddls.Add(sql); return Task.CompletedTask; }
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql) { ddls.Add(sql); return Task.FromResult(new KsqlDbResponse(true, string.Empty)); }
         var mapping = new MappingRegistry();
         var registry = new ConcurrentDictionary<Type, EntityModel>();
         var asm = AssemblyBuilder.DefineDynamicAssembly(new System.Reflection.AssemblyName("dyn"), AssemblyBuilderAccess.Run);
         var mod = asm.DefineDynamicModule("m");
         Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
-        await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
         return (ddls, mapping);
     }
 
@@ -88,3 +89,4 @@ public class DerivedTumblingPipelineHubAggregationTests
         Assert.Contains("GRACE PERIOD 2 SECONDS", ddl1m, StringComparison.OrdinalIgnoreCase);
     }
 }
+

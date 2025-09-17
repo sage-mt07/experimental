@@ -179,6 +179,25 @@ internal class KafkaAdminService : IDisposable
     /// <summary>
     /// Check whether the topic exists
     /// </summary>
+    public TopicMetadata? TryGetTopicMetadata(string topicName, TimeSpan? timeout = null)
+    {
+        try
+        {
+            var md = timeout.HasValue
+                ? _adminClient.GetMetadata(topicName, timeout.Value)
+                : _adminClient.GetMetadata(topicName, TimeSpan.FromSeconds(5));
+            var topic = md?.Topics?.FirstOrDefault(t => t.Topic == topicName);
+            if (topic == null || topic.Error.IsError)
+                return null;
+            return topic;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogDebug(ex, "Failed to get metadata for {TopicName}", topicName);
+            return null;
+        }
+    }
+
     private bool TopicExists(string topicName, CancellationToken cancellationToken)
     {
         try
