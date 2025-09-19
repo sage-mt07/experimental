@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq.Expressions;
-using System.Text.Json;
+using System.Text;
 using ConfluentSchemaRegistry = Confluent.SchemaRegistry;
 namespace Kafka.Ksql.Linq;
 public abstract partial class KsqlContext
@@ -336,7 +336,7 @@ public abstract partial class KsqlContext
                     _mappingRegistry,
                     _entityModels,
                     Logger);
-                var persistent = CollectPersistentExecutions(results);
+                var persistent = await CollectPersistentExecutionsAsync(results).ConfigureAwait(false);
                 try
                 {
                     if (persistent.Count > 0)
@@ -360,26 +360,28 @@ public abstract partial class KsqlContext
             throw lastError ?? new TimeoutException($"Derived query for {entityType.Name} did not stabilize.");
             Task<KsqlDbResponse> ExecuteDerivedAsync(EntityModel m, string sql)
                 => ExecuteWithRetryAsync(sql);
-            List<PersistentQueryExecution> CollectPersistentExecutions(IReadOnlyList<DerivedTumblingPipeline.ExecutionResult> executions)
+            async Task<List<PersistentQueryExecution>> CollectPersistentExecutionsAsync(IReadOnlyList<DerivedTumblingPipeline.ExecutionResult> executions)
             {
                 var list = new List<PersistentQueryExecution>();
                 foreach (var execution in executions)
                 {
                     if (!execution.IsPersistentQuery)
                         continue;
-                    if (TryExtractPersistentQueryId(execution.Response, out var queryId))
+                    var topicName = execution.Model.GetTopicName();
+                    var queryId = await TryGetQueryIdFromShowQueriesAsync(topicName, execution.Statement).ConfigureAwait(false);
+                    if (!string.IsNullOrEmpty(queryId))
                     {
                         list.Add(new PersistentQueryExecution(
                             queryId,
                             execution.Model,
-                            execution.Model.GetTopicName(),
+                            topicName,
                             execution.Statement,
                             execution.InputTopic,
                             true));
                     }
                     else
                     {
-                        Logger.LogWarning("Missing queryId in ksqlDB response for derived statement: {Statement}", execution.Statement);
+                        Logger.LogWarning("Could not locate queryId via SHOW QUERIES for derived statement targeting {Topic}: {Statement}", topicName, execution.Statement);
                     }
                 }
                 return list;
@@ -408,8 +410,8 @@ public abstract partial class KsqlContext
             Exception? lastError = null;
             for (var attempt = 0; attempt < attempts; attempt++)
             {
-                var response = await ExecuteWithRetryAsync(ddl);
-                var persistent = CollectPersistentExecutions(response);
+                _ = await ExecuteWithRetryAsync(ddl);
+                var persistent = await CollectPersistentExecutionsAsync().ConfigureAwait(false);
                 try
                 {
                     if (persistent.Count > 0)
@@ -432,22 +434,24 @@ public abstract partial class KsqlContext
                 }
             }
             throw lastError ?? new TimeoutException($"Persistent query for {entityType.Name} did not stabilize.");
-            List<PersistentQueryExecution> CollectPersistentExecutions(KsqlDbResponse response)
+            async Task<List<PersistentQueryExecution>> CollectPersistentExecutionsAsync()
             {
                 var list = new List<PersistentQueryExecution>();
-                if (TryExtractPersistentQueryId(response, out var queryId))
+                var topicName = tableModel.GetTopicName();
+                var queryId = await TryGetQueryIdFromShowQueriesAsync(topicName, ddl).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(queryId))
                 {
                     list.Add(new PersistentQueryExecution(
                         queryId,
                         tableModel,
-                        tableModel.GetTopicName(),
+                        topicName,
                         ddl,
                         null,
                         false));
                 }
                 else if (ddl.IndexOf(" AS ", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    Logger.LogWarning("No queryId returned for CTAS statement executed for {Entity}", entityType.Name);
+                    Logger.LogWarning("Could not locate queryId via SHOW QUERIES for CTAS statement executed for {Entity}", entityType.Name);
                 }
                 return list;
             }
@@ -756,22 +760,24 @@ public abstract partial class KsqlContext
             {
                 if (metadata.Partitions.Count != partitions)
                 {
-                    Logger.LogWarning("Internal topic {Topic} has {Actual} partitions, expected {Expected}", topicName, metadata.Partitions.Count, partitions);
+                    Logger?.LogWarning("Internal topic {Topic} has {Actual} partitions, expected {Expected}", topicName, metadata.Partitions.Count, partitions);
                 }
                 return;
             }
             if (!creationAttempted && DateTime.UtcNow >= creationThreshold)
             {
-                try
-                {
-                    await _adminService.CreateDbTopicAsync(topicName, partitions, 1).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, "Failed to create internal topic {Topic}", topicName);
-                }
-                creationAttempted = true;
+            try
+            {
+                Logger?.LogInformation("Creating internal topic {Topic} with {Partitions} partitions (manual)", topicName, partitions);
+                await _adminService.CreateDbTopicAsync(topicName, partitions, 1).ConfigureAwait(false);
+                Logger?.LogInformation("Internal topic {Topic} created successfully", topicName);
             }
+            catch (Exception ex)
+            {
+                Logger?.LogWarning(ex, "Failed to create internal topic {Topic}", topicName);
+            }
+            creationAttempted = true;
+        }
             await Task.Delay(pollDelay, cancellationToken).ConfigureAwait(false);
         }
         throw new TimeoutException($"Internal topic {topicName} was not ready within {timeout.TotalSeconds:F0}s");
@@ -787,49 +793,155 @@ public abstract partial class KsqlContext
         var baseName = $"_confluent-ksql-{serviceId}{prefix}{queryId}-Aggregate-";
         return ($"{baseName}GroupBy-repartition", $"{baseName}Aggregate-Materialize-changelog");
     }
-    private static bool TryExtractPersistentQueryId(KsqlDbResponse response, out string queryId)
+    private async Task<string?> TryGetQueryIdFromShowQueriesAsync(string targetTopic, string? statement, int attempts = 5, int delayMs = 1000)
     {
-        queryId = string.Empty;
-        if (string.IsNullOrWhiteSpace(response.Message))
-            return false;
-        try
+        for (var attempt = 0; attempt < attempts; attempt++)
         {
-            using var document = JsonDocument.Parse(response.Message);
-            if (document.RootElement.ValueKind == JsonValueKind.Array)
+            var response = await ExecuteStatementAsync("SHOW QUERIES;").ConfigureAwait(false);
+            if (response.IsSuccess && !string.IsNullOrWhiteSpace(response.Message))
             {
-                foreach (var element in document.RootElement.EnumerateArray())
+                Logger?.LogInformation("SHOW QUERIES output (attempt {Attempt}): {Output}", attempt + 1, response.Message);
+                var queryId = FindQueryIdInShowQueries(response.Message, targetTopic, statement);
+                if (!string.IsNullOrEmpty(queryId))
+                    return queryId;
+                Logger?.LogWarning("SHOW QUERIES attempt {Attempt} did not contain a matching query for {Topic}", attempt + 1, targetTopic);
+            }
+            else
+            {
+                Logger?.LogWarning("SHOW QUERIES attempt {Attempt} failed or returned empty message", attempt + 1);
+            }
+
+            await _delay(TimeSpan.FromMilliseconds(delayMs), default).ConfigureAwait(false);
+        }
+
+        Logger?.LogWarning("Unable to locate queryId for {Topic} after {Attempts} attempts", targetTopic, attempts);
+        return null;
+    }
+
+    internal static string? FindQueryIdInShowQueries(string showQueriesOutput, string targetTopic, string? statement)
+    {
+        if (string.IsNullOrWhiteSpace(showQueriesOutput))
+            return null;
+
+        var normalizedTargetTopic = NormalizeIdentifierForMatch(targetTopic);
+        var normalizedStatement = NormalizeSqlForMatch(statement);
+
+        var lines = showQueriesOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var rawLine in lines)
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrEmpty(line) || line.StartsWith("+") || line.StartsWith("-"))
+                continue;
+
+            if (!line.Contains('|'))
+                continue;
+
+            var lineUpper = line.ToUpperInvariant();
+
+            var columns = ParseColumns(line);
+
+            if (columns.Count == 0)
+                continue;
+
+            var queryId = columns[0];
+            if (string.IsNullOrEmpty(queryId) || queryId.Equals("Query ID", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var topicMatches = false;
+            if (!string.IsNullOrEmpty(normalizedTargetTopic))
+            {
+                if (columns.Count > 1)
                 {
-                    if (element.ValueKind != JsonValueKind.Object)
-                        continue;
-                    if (element.TryGetProperty("commandStatus", out var status) && status.ValueKind == JsonValueKind.Object)
-                    {
-                        if (status.TryGetProperty("queryId", out var idElement) && idElement.ValueKind == JsonValueKind.String)
-                        {
-                            var idValue = idElement.GetString();
-                            if (!string.IsNullOrWhiteSpace(idValue))
-                            {
-                                queryId = idValue;
-                                return true;
-                            }
-                        }
-                    }
-                    if (element.TryGetProperty("queryId", out var directId) && directId.ValueKind == JsonValueKind.String)
-                    {
-                        var idValue = directId.GetString();
-                        if (!string.IsNullOrWhiteSpace(idValue))
-                        {
-                            queryId = idValue;
-                            return true;
-                        }
-                    }
+                    var topicColumn = columns[1];
+                    var topics = topicColumn.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(t => NormalizeIdentifierForMatch(t.Replace("\"", string.Empty)))
+                        .ToList();
+                    topicMatches = topics.Any(t => !string.IsNullOrEmpty(t) && t.Equals(normalizedTargetTopic, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (!topicMatches)
+                    topicMatches = lineUpper.Contains(normalizedTargetTopic);
+            }
+
+            var statementMatches = false;
+            if (!string.IsNullOrEmpty(normalizedStatement))
+            {
+                var normalizedColumnStatement = columns.Count > 2 ? NormalizeSqlForMatch(columns[2]) : string.Empty;
+                statementMatches = lineUpper.Contains(normalizedStatement) ||
+                    (!string.IsNullOrEmpty(normalizedColumnStatement) && normalizedColumnStatement.Contains(normalizedStatement, StringComparison.Ordinal));
+            }
+
+            if (topicMatches || statementMatches)
+                return queryId;
+        }
+
+        return null;
+    }
+
+    private static string NormalizeIdentifierForMatch(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : value.Trim().Trim('\"').ToUpperInvariant();
+    }
+
+    private static string NormalizeSqlForMatch(string? sql)
+    {
+        if (string.IsNullOrWhiteSpace(sql))
+            return string.Empty;
+
+        var builder = new System.Text.StringBuilder(sql.Length);
+        var previousWasWhitespace = false;
+        foreach (var ch in sql)
+        {
+            if (char.IsWhiteSpace(ch))
+            {
+                if (!previousWasWhitespace)
+                {
+                    builder.Append(' ');
+                    previousWasWhitespace = true;
                 }
             }
+            else
+            {
+                builder.Append(char.ToUpperInvariant(ch));
+                previousWasWhitespace = false;
+            }
         }
-        catch (JsonException)
+
+        return builder.ToString().Trim();
+    }
+
+    private static List<string> ParseColumns(string line)
+    {
+        var list = new List<string>();
+        if (string.IsNullOrEmpty(line))
+            return list;
+
+        var builder = new System.Text.StringBuilder();
+        foreach (var ch in line)
         {
-            // ignore parse errors, fallback to failure
+            if (ch == '|')
+            {
+                AddColumn(builder, list);
+            }
+            else
+            {
+                builder.Append(ch);
+            }
         }
-        return false;
+        AddColumn(builder, list);
+        return list;
+
+        static void AddColumn(System.Text.StringBuilder sb, List<string> target)
+        {
+            if (sb.Length == 0)
+                return;
+            var value = sb.ToString().Trim();
+            sb.Clear();
+            if (value.Length > 0)
+                target.Add(value);
+        }
     }
     private static int GetPersistentQueryMaxAttempts()
     {

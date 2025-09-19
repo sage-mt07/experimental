@@ -81,6 +81,12 @@ modelBuilder.Entity<Bar>()
 - Queries: adjust `KSQL_KSQL_QUERY_TIMEOUT_MS=300000` (5 min) and `KSQL_KSQL_QUERY_PULL_MAX_ALLOWED_OFFSET_LAG`
 - Internal/external Kafka listeners: set `PLAINTEXT://localhost:9092, INTERNAL://kafka:29092` properly; ksqlDB/Schema Registry use `kafka:29092`
 
+## 9.5 Persistent Query Stabilization
+- EnsureQueryEntityDdlAsync logs queryId, polls internal topics, waits for consumer group stabilization.
+- Retries with TERMINATE→rerun until timeout (default 45s) or max attempts (default 3).
+- Controlled by KSQL_PERSISTENT_QUERY_READY_TIMEOUT_SECONDS / MAX_ATTEMPTS.
+- Skips stabilization if no Kafka admin access, logs warning.
+
 ## 10. Key patterns (summary)
 - Week concept: DSL's WeekAnchor is Monday; since ksqlDB windows lack weekday anchors, pin it logically with MarketSchedule `MarketDate`.
 - Daily/weekly: `TimeFrame + Tumbling(Days={1|7})`, use `g.WindowStart()` as `BucketStart`, and build OHLC with Earliest/Max/Min/Latest.

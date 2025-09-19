@@ -26,6 +26,69 @@ class TestSource
 public class DerivedTumblingPipelineTests
 {
     [Fact]
+    public async Task Final1sStream_repartitions_on_bucket_and_emits_changes()
+    {
+        var qao = new TumblingQao
+        {
+            TimeKey = "Timestamp",
+            Windows = new[] { new Timeframe(1, "m") },
+            Keys = new[] { "Broker", "Symbol", "BucketStart" },
+            Projection = new[] { "Broker", "Symbol", "BucketStart", "Open", "High", "Low", "Close" },
+            PocoShape = new[]
+            {
+                new ColumnShape("Broker", typeof(string), false),
+                new ColumnShape("Symbol", typeof(string), false),
+                new ColumnShape("BucketStart", typeof(long), false),
+                new ColumnShape("Open", typeof(double), false),
+                new ColumnShape("High", typeof(double), false),
+                new ColumnShape("Low", typeof(double), false),
+                new ColumnShape("Close", typeof(double), false)
+            },
+            BasedOn = new BasedOnSpec(new[] { "Broker", "Symbol" }, "Open", "Close", string.Empty),
+            WeekAnchor = DayOfWeek.Monday
+        };
+        var baseModel = new EntityModel { EntityType = typeof(TestSource) };
+        var model = new KsqlQueryModel
+        {
+            SourceTypes = new[] { typeof(TestSource) },
+            Windows = { "1m" }
+        };
+
+        var ddls = new ConcurrentBag<string>();
+        Task<KsqlDbResponse> Exec(EntityModel _, string sql)
+        {
+            ddls.Add(sql);
+            return Task.FromResult(new KsqlDbResponse(true, string.Empty));
+        }
+
+        var mapping = new MappingRegistry();
+        var registry = new ConcurrentDictionary<Type, EntityModel>();
+        var asm = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("dyn"), AssemblyBuilderAccess.Run);
+        var mod = asm.DefineDynamicModule("m");
+        Type Resolver(string _) => mod.DefineType("T" + Guid.NewGuid().ToString("N")).CreateType()!;
+
+        _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
+
+        var streamDdl = ddls.Single(s => s.StartsWith("CREATE STREAM bar_1s_final_s", StringComparison.OrdinalIgnoreCase));
+        Assert.StartsWith("CREATE STREAM BAR_1S_FINAL_S (", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("KAFKA_TOPIC='BAR_1S_FINAL'", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("KEY_FORMAT='AVRO'", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("PARTITIONS=1", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("REPLICAS=1", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("RETENTION_MS=604800000", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("VALUE_AVRO_SCHEMA_FULL_NAME='", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("BROKER VARCHAR KEY", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("SYMBOL VARCHAR KEY", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("BUCKETSTART BIGINT", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("OPEN DOUBLE", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("VALUE_FORMAT='AVRO'", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("AS SELECT", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("EMIT", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("PARTITION BY", streamDdl, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("GROUP BY", streamDdl, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Live_and_Final_emit_different_ddl_without_mutating_model()
     {
         var qao = new TumblingQao
@@ -65,7 +128,7 @@ public class DerivedTumblingPipelineTests
         _ = await DerivedTumblingPipeline.RunAsync(qao, baseModel, model, Exec, Resolver, mapping, registry, new LoggerFactory().CreateLogger("test"));
 
         Assert.Contains(ddls, s => s.StartsWith("CREATE TABLE bar_1s_final"));
-        Assert.Contains(ddls, s => s.StartsWith("CREATE STREAM bar_1s_final_s"));
+        Assert.Contains(ddls, s => s.StartsWith("CREATE STREAM bar_1s_final_s", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(ddls, s => s.StartsWith("CREATE TABLE bar_1m_live") || s.StartsWith("CREATE STREAM bar_1m_live"));
         Assert.DoesNotContain(ddls, s => s.Contains("_1m_final"));
     }

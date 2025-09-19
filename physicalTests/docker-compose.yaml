@@ -55,11 +55,12 @@ services:
       KSQL_CONFIG_DIR: "/etc/ksql"
       KSQL_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:29092"
       KSQL_LISTENERS: "http://0.0.0.0:8088"
-      KSQL_KSQL_SERVICE_ID: "ksql_service_1"
+      KSQL_KSQL_SERVICE_ID: "${KSQL_SERVICE_ID:-ksql_service_1}"
       KSQL_KSQL_COMMAND_TOPIC_REPLICATION_FACTOR: "1"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: "1"
       # Start from beginning to avoid missing records relative to AddAsync
       KSQL_KSQL_STREAMS_AUTO_OFFSET_RESET: "earliest"
+      KSQL_KSQL_STREAMS_PERSISTENT_QUERY_NAME_PREFIX: "${KSQL_PERSISTENT_PREFIX:-query_}"
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
       KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
@@ -200,3 +201,4 @@ services:
       KSQL_QUERY_RUNNING_CONSECUTIVE: 5
       KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS: 15
     entrypoint: ["/bin/sh","-lc","/src/physicalTests/Runners/runner-entrypoint.sh"]
+

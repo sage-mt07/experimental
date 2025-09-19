@@ -139,7 +139,8 @@ flowchart TB
 
 - 1秒最終TABLEでは `WINDOWSTART` を `BucketStart` として投影する（投影で1回必須）。
 - GROUP BY への `WINDOWSTART` の明記は任意（推奨）。投影に含めれば生成系は正しく動作する。
-- 上位の1分・5分は、1s TABLE のチェンジログを素の STREAM（`*_1s_final_s`）として読み、同様に投影で時刻列を含める。
+- 上位の1分・5分は、1s TABLE のチェンジログを素の STREAM（`*_1s_final_s`）として読み、投影では WindowStart を時刻列として残す。
+- `*_1s_final_s` は `CREATE STREAM ... WITH (...)` で既存トピックにバインドする（列定義は DDL で明示し、`AS SELECT` は使わない）。`RETENTION_MS` は 7 日 (604800000) を基準とし、プロファイルで上書き可能。
 - CREATE TABLE/STREAM の WITH 句は `KEY_FORMAT='AVRO'` と `VALUE_FORMAT='AVRO'` を明示する。
 - CREATE TABLE 時は Schema Registry に登録した `VALUE_AVRO_SCHEMA_FULL_NAME` を WITH 句に設定する。
 - DECIMAL の精度はアプリ依存（既定: 18,2）。必要に応じてプロパティ単位で上書きする。
@@ -166,7 +167,7 @@ FROM TICKS
 WINDOW TUMBLING (SIZE 1 SECOND)
 GROUP BY Broker, Symbol, WINDOWSTART;
 
--- 2) TABLE の変更ログに素でかぶせた中間 STREAM
+-- 2) TABLE のチェンジログを素の STREAM としてバインド（CSAS を使わない）
 CREATE STREAM BAR_1S_FINAL_S (
   Broker STRING KEY,
   Symbol STRING KEY,
@@ -178,7 +179,11 @@ CREATE STREAM BAR_1S_FINAL_S (
 ) WITH (
   KAFKA_TOPIC='bar_1s_final',
   KEY_FORMAT='AVRO',
-  VALUE_FORMAT='AVRO'
+  VALUE_FORMAT='AVRO',
+  VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_bars.bar_1s_final_s_valueAvro',
+  PARTITIONS=3,
+  REPLICAS=1,
+  RETENTION_MS=604800000
 );
 
 -- 3) 下流（例：1m/5m）

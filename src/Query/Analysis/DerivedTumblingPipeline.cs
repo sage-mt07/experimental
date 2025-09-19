@@ -25,6 +25,8 @@ internal static class DerivedTumblingPipeline
 
 {
 
+    private const long DefaultFinalStreamRetentionMs = 7L * 24 * 60 * 60 * 1000;
+
     public sealed record ExecutionResult(
 
         EntityModel Model,
@@ -273,7 +275,11 @@ internal static class DerivedTumblingPipeline
 
                 }
 
-                mapping.RegisterMeta(dt, (keyMeta, valMeta), m.TopicName, genericKey: false, genericValue: true, overrideNamespace: ns);
+                var kvMapping = mapping.RegisterMeta(dt, (keyMeta, valMeta), m.TopicName, genericKey: false, genericValue: true, overrideNamespace: ns);
+
+                if (string.IsNullOrWhiteSpace(m.ValueSchemaFullName))
+
+                    m.ValueSchemaFullName = kvMapping.AvroValueRecordSchema?.Fullname;
 
             }
 
@@ -532,13 +538,15 @@ internal static class DerivedTumblingPipeline
 
         {
 
-            // ksqlDB limitation: persistent queries cannot source from windowed TABLEs.
-
-            // Define a logical STREAM over the 1s TABLE's Kafka topic with explicit columns so keys are resolvable.
+            // Materialize a non-windowed STREAM by binding to the 1s TABLE topic (no CSAS).
 
             var table1s = $"{baseName}_1s_final";
 
-            // Build columns from AdditionalSettings (shapes captured earlier)
+            var streamName = name;
+
+            var topicName = table1s;
+
+            var nsValue = model.AdditionalSettings.TryGetValue("namespace", out var nsObj3) ? nsObj3?.ToString() : null;
 
             var keyNames = model.AdditionalSettings.TryGetValue("keys", out var kObj) && kObj is string[] ks ? ks : Array.Empty<string>();
 
@@ -548,35 +556,106 @@ internal static class DerivedTumblingPipeline
 
             var valTypes = model.AdditionalSettings.TryGetValue("projection/types", out var vtObj) && vtObj is Type[] vts ? vts : Array.Empty<Type>();
 
-            static string Map(Type t) => Query.Schema.KsqlTypeMapping.MapToKsqlType(t, null);
+            var valueSchemaFullName = model.ValueSchemaFullName;
 
-            var cols = new System.Collections.Generic.List<string>();
+            if (string.IsNullOrWhiteSpace(valueSchemaFullName) && !string.IsNullOrWhiteSpace(nsValue))
+
+            {
+
+                valueSchemaFullName = $"{nsValue}.{name}_valueAvro";
+
+                model.ValueSchemaFullName = valueSchemaFullName;
+
+            }
+
+            var partitions = model.Partitions > 0 ? model.Partitions : 1;
+
+            var replicas = model.ReplicationFactor > 0 ? model.ReplicationFactor : (short)1;
+
+            var retentionMs = ResolveRetentionMs(model.AdditionalSettings);
+
+            var hasKeys = keyNames.Any(k => !string.IsNullOrWhiteSpace(k));
+
+            static string Map(Type t) => Kafka.Ksql.Linq.Query.Schema.KsqlTypeMapping.MapToKsqlType(t, null);
+
+            var cols = new List<string>();
 
             for (int i = 0; i < keyNames.Length && i < keyTypes.Length; i++)
 
-                cols.Add($"{keyNames[i].ToUpperInvariant()} {Map(keyTypes[i])} KEY");
+            {
+
+                var key = keyNames[i];
+
+                if (string.IsNullOrWhiteSpace(key))
+
+                    continue;
+
+                cols.Add($"{key.ToUpperInvariant()} {Map(keyTypes[i])} KEY");
+
+            }
 
             for (int i = 0; i < valNames.Length && i < valTypes.Length; i++)
 
             {
 
-                var n = valNames[i].ToUpperInvariant();
+                var candidate = valNames[i];
 
-                if (keyNames.Any(k => string.Equals(k, valNames[i], StringComparison.OrdinalIgnoreCase)))
+                if (string.IsNullOrWhiteSpace(candidate))
 
                     continue;
 
-                cols.Add($"{n} {Map(valTypes[i])}");
+                if (keyNames.Any(k => string.Equals(k, candidate, StringComparison.OrdinalIgnoreCase)))
+
+                    continue;
+
+                cols.Add($"{candidate.ToUpperInvariant()} {Map(valTypes[i])}");
 
             }
 
             var colList = string.Join(", ", cols);
 
-            // Include PARTITIONS/REPLICAS so the KAFKA_TOPIC is created if missing (first run ordering tolerance)
+            var withParts = new List<string>
 
-            ddl = $"CREATE STREAM {name} ({colList}) WITH (KAFKA_TOPIC='{table1s}', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1);";
+            {
+
+                $"KAFKA_TOPIC='{topicName}'"
+
+            };
+
+            if (hasKeys)
+
+            {
+
+                withParts.Add("KEY_FORMAT='AVRO'");
+
+            }
+
+            withParts.Add("VALUE_FORMAT='AVRO'");
+
+            if (!string.IsNullOrWhiteSpace(valueSchemaFullName))
+
+            {
+
+                withParts.Add($"VALUE_AVRO_SCHEMA_FULL_NAME='{valueSchemaFullName}'");
+
+            }
+
+            withParts.Add($"PARTITIONS={partitions}");
+
+            withParts.Add($"REPLICAS={replicas}");
+
+            if (retentionMs > 0)
+
+            {
+
+                withParts.Add($"RETENTION_MS={retentionMs}");
+
+            }
+
+            ddl = $"CREATE STREAM {streamName} ({colList}) WITH ({string.Join(", ", withParts)});";
 
         }
+
 
         else
 
@@ -655,4 +734,39 @@ internal static class DerivedTumblingPipeline
 
 
     // Note: HubAggregationRewriter (expression-tree) was removed in favor of safe SELECT-clause adjustment above.
+
+    private static long ResolveRetentionMs(IReadOnlyDictionary<string, object> settings)
+    {
+        if (TryConvertRetention(settings, "retentionMs", out var direct))
+            return direct;
+        if (TryConvertRetention(settings, "retention.ms", out var dotted))
+            return dotted;
+        return DefaultFinalStreamRetentionMs;
+    }
+
+    private static bool TryConvertRetention(IReadOnlyDictionary<string, object> settings, string key, out long result)
+    {
+        if (settings.TryGetValue(key, out var value))
+        {
+            switch (value)
+            {
+                case long l when l > 0:
+                    result = l;
+                    return true;
+                case int i when i > 0:
+                    result = i;
+                    return true;
+                case short s when s > 0:
+                    result = s;
+                    return true;
+                case string s when long.TryParse(s, out var parsed) && parsed > 0:
+                    result = parsed;
+                    return true;
+            }
+        }
+
+        result = 0;
+        return false;
+    }
+
 }

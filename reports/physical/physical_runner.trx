@@ -1,16 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="7e4897fa-4f0c-4f66-8508-b0677c5e963f" name="@bc1b7d62b99d 2025-09-17 02:42:30" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="2025-09-17T02:42:30.7494784+00:00" queuing="2025-09-17T02:42:30.7494784+00:00" start="2025-09-17T02:36:45.2076224+00:00" finish="2025-09-17T02:42:30.7548321+00:00" />
-  <TestSettings name="default" id="41de5a2d-4577-421f-b489-bb46e56ef2d3">
-    <Deployment runDeploymentRoot="_bc1b7d62b99d_2025-09-17_02_42_30" />
+<TestRun id="75b4c365-5944-45b2-a9f4-2c46d4bd7dd7" name="@0f286a1a3111 2025-09-18 23:13:07" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-09-18T23:13:07.6123256+00:00" queuing="2025-09-18T23:13:07.6123256+00:00" start="2025-09-18T23:12:04.0183740+00:00" finish="2025-09-18T23:13:07.6188711+00:00" />
+  <TestSettings name="default" id="74cd7685-79c9-4da2-9d31-f1ade3a08080">
+    <Deployment runDeploymentRoot="_0f286a1a3111_2025-09-18_23_13_07" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="217b4ec7-3830-45c5-b185-18f7a41ccfae" testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" testName="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" computerName="bc1b7d62b99d" duration="00:05:17.4178568" startTime="2025-09-17T02:42:30.6704776+00:00" endTime="2025-09-17T02:42:30.6704878+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="217b4ec7-3830-45c5-b185-18f7a41ccfae">
+    <UnitTestResult executionId="3d5129e2-274f-422b-a5be-b5d508e56f16" testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" testName="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" computerName="0f286a1a3111" duration="00:01:05.7018819" startTime="2025-09-18T23:13:07.5241483+00:00" endTime="2025-09-18T23:13:07.5241606+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3d5129e2-274f-422b-a5be-b5d508e56f16">
       <Output>
         <ErrorInfo>
-          <Message>System.TimeoutException : CTAS/CSAS query for bar_tbimp_1m_live did not reach RUNNING within 300s</Message>
-          <StackTrace>   at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout)
-   at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout)
+          <Message>System.InvalidOperationException : DDL execution failed for Bar: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}</Message>
+          <StackTrace>   at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__ExecuteWithRetryAsync|2&gt;d.MoveNext()
+--- End of stack trace from previous location ---
+   at Kafka.Ksql.Linq.Query.Analysis.DerivedTumblingPipeline.RunAsync(TumblingQao qao, EntityModel baseModel, KsqlQueryModel queryModel, Func`3 execute, Func`2 resolveType, MappingRegistry mapping, ConcurrentDictionary`2 registry, ILogger logger)
+   at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__EnsureDerivedQueryEntityDdlAsync|0&gt;d.MoveNext()
+--- End of stack trace from previous location ---
    at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model)
    at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync()
    at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration()
@@ -25,12 +28,12 @@
   </Results>
   <TestDefinitions>
     <UnitTest name="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" storage="/src/physicaltests/bin/release/net8.0/kafka.ksql.linq.tests.integration.dll" id="d4f95360-fa20-03e1-5810-a5fd78838e0d">
-      <Execution id="217b4ec7-3830-45c5-b185-18f7a41ccfae" />
+      <Execution id="3d5129e2-274f-422b-a5be-b5d508e56f16" />
       <TestMethod codeBase="/src/physicalTests/bin/Release/net8.0/Kafka.Ksql.Linq.Tests.Integration.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests" name="Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
-    <TestEntry testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" executionId="217b4ec7-3830-45c5-b185-18f7a41ccfae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d4f95360-fa20-03e1-5810-a5fd78838e0d" executionId="3d5129e2-274f-422b-a5be-b5d508e56f16" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
   </TestEntries>
   <TestLists>
     <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
@@ -40,15 +43,25 @@
     <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
     <Output>
       <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.6+bf9b858c26 (64-bit .NET 8.0.20)
-[xUnit.net 00:00:00.18]   Discovering: Kafka.Ksql.Linq.Tests.Integration
-[xUnit.net 00:00:00.24]   Discovered:  Kafka.Ksql.Linq.Tests.Integration
-[xUnit.net 00:00:00.24]   Starting:    Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.22]   Discovering: Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.29]   Discovered:  Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:00:00.30]   Starting:    Kafka.Ksql.Linq.Tests.Integration
 info: Kafka.Ksql.Linq.KsqlContext[0]
       ksql execute: EXECUTE SQL=SHOW TOPICS;
 info: Kafka.Ksql.Linq.KsqlContext[0]
       KSQL DDL (simple DlqEnvelope): CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc VARCHAR, IngestedAtUtc VARCHAR, PayloadFormatKey VARCHAR, PayloadFormatValue VARCHAR, SchemaIdKey VARCHAR, SchemaIdValue VARCHAR, KeyIsNull BOOLEAN, ErrorType VARCHAR, ErrorMessageShort VARCHAR, StackTraceShort VARCHAR, ErrorFingerprint VARCHAR, ApplicationId VARCHAR, ConsumerGroup VARCHAR, Host VARCHAR, Headers MAP&lt;STRING, STRING&gt;) WITH (KAFKA_TOPIC='dead-letter-queue', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='kafka_ksql_linq_messaging.dead_letter_queue_valueAvro', PARTITIONS=1, REPLICAS=1);
 info: Kafka.Ksql.Linq.KsqlContext[0]
       ksql execute: EXECUTE SQL=CREATE OR REPLACE STREAM dead_letter_queue (`Topic` VARCHAR KEY, `Partition` INT KEY, `Offset` BIGINT KEY, TimestampUtc ...
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
 info: Kafka.Ksql.Linq.KsqlContext[0]
       ksql execute: EXECUTE SQL=DESCRIBE EXTENDED DEAD-LETTER-QUEUE;
 info: Kafka.Ksql.Linq.KsqlContext[0]
@@ -142,336 +155,76 @@ info: Kafka.Ksql.Linq.KsqlContext[0]
 info: Kafka.Ksql.Linq.KsqlContext[0]
       ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      KSQL DDL (derived bar_tbimp_1s_final): CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_valueAvro') AS
-      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(Bid) AS Open, MAX(Bid) AS High, MIN(Bid) AS Low, LATEST_BY_OFFSET(Bid) AS Close
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      ksql execute: EXECUTE SQL=DESCRIBE EXTENDED TICKS_TBIMP;
+info: Kafka.Ksql.Linq.KsqlContext[0]
+      KSQL DDL (derived bar_tbimp_1s_final): CREATE TABLE bar_tbimp_1s_final  WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS
+      SELECT BROKER AS Broker, SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(Bid) AS Open, MAX(Bid) AS High, MIN(Bid) AS Low, LATEST_BY_OFFSET(Bid) AS Close
       FROM TICKS_TBIMP o WINDOW TUMBLING (SIZE 1 SECONDS)
-      GROUP BY o.BROKER, o.SYMBOL
+      GROUP BY BROKER, SYMBOL
       EMIT FINAL;
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1s_final WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AV...
+      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1s_final  WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO') AS SELE...
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      KSQL DDL (derived bar_tbimp_1s_final_s): CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, 2), HIGH DECIMAL(18, 2), LOW DECIMAL(18, 2), CLOSE DECIMAL(18, 2)) WITH (KAFKA_TOPIC='bar_tbimp_1s_final', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro');
+      KSQL DDL (derived bar_tbimp_1s_final_s): CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=CREATE STREAM bar_tbimp_1s_final_s (BROKER VARCHAR KEY, SYMBOL VARCHAR KEY, BUCKETSTART TIMESTAMP KEY, OPEN DECIMAL(18, ...
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
+warn: Kafka.Ksql.Linq.KsqlContext[0]
+      Retrying DDL for Bar (attempt 1/5) due to: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      KSQL DDL (derived bar_tbimp_1m_live): CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1m_live_valueAvro') AS
-      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close
-      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 1 MINUTES, GRACE PERIOD 2 SECONDS)
-      GROUP BY o.BROKER, o.SYMBOL
-      EMIT CHANGES;
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
+warn: Kafka.Ksql.Linq.KsqlContext[0]
+      Retrying DDL for Bar (attempt 2/5) due to: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_1m_live WITH (KAFKA_TOPIC='bar_tbimp_1m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO...
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
+warn: Kafka.Ksql.Linq.KsqlContext[0]
+      Retrying DDL for Bar (attempt 3/5) due to: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      KSQL DDL (derived bar_tbimp_5m_live): CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_5m_live_valueAvro') AS
-      SELECT o.BROKER AS Broker, o.SYMBOL AS Symbol, WINDOWSTART AS BucketStart, EARLIEST_BY_OFFSET(o.OPEN) AS Open, MAX(o.HIGH) AS High, MIN(o.LOW) AS Low, LATEST_BY_OFFSET(o.CLOSE) AS Close
-      FROM bar_tbimp_1s_final_s o WINDOW TUMBLING (SIZE 5 MINUTES, GRACE PERIOD 3 SECONDS)
-      GROUP BY o.BROKER, o.SYMBOL
-      EMIT CHANGES;
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
+warn: Kafka.Ksql.Linq.KsqlContext[0]
+      Retrying DDL for Bar (attempt 4/5) due to: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=CREATE TABLE bar_tbimp_5m_live WITH (KAFKA_TOPIC='bar_tbimp_5m_live', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', VALUE_AVRO...
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
+warn: Kafka.Ksql.Linq.KsqlContext[0]
+      Retrying DDL for Bar (attempt 5/5) due to: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
 info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
-info: Kafka.Ksql.Linq.KsqlContext[0]
-      ksql execute: EXECUTE SQL=SHOW QUERIES;
+      ksql execute: EXECUTE SQL=CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, ...
 fail: Kafka.Ksql.Linq.KsqlContext[0]
-      KsqlContext initialization failed: CTAS/CSAS query for bar_tbimp_1m_live did not reach RUNNING within 300s 
-      System.TimeoutException: CTAS/CSAS query for bar_tbimp_1m_live did not reach RUNNING within 300s
-         at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout)
-         at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout)
+      DDL execution failed for Bar: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
+fail: Kafka.Ksql.Linq.KsqlContext[0]
+      KsqlContext initialization failed: DDL execution failed for Bar: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]} 
+      System.InvalidOperationException: DDL execution failed for Bar: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
+         at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__ExecuteWithRetryAsync|2&gt;d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Kafka.Ksql.Linq.Query.Analysis.DerivedTumblingPipeline.RunAsync(TumblingQao qao, EntityModel baseModel, KsqlQueryModel queryModel, Func`3 execute, Func`2 resolveType, MappingRegistry mapping, ConcurrentDictionary`2 registry, ILogger logger)
+         at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__EnsureDerivedQueryEntityDdlAsync|0&gt;d.MoveNext()
+      --- End of stack trace from previous location ---
          at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model)
          at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync()
          at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration()
          at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory)
-[xUnit.net 00:05:17.71]       System.TimeoutException : CTAS/CSAS query for bar_tbimp_1m_live did not reach RUNNING within 300s
-[xUnit.net 00:05:17.71]       Stack Trace:
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.WaitForQueryRunningAsync(String targetEntityName, TimeSpan timeout)
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.WaitForDerivedQueriesRunningAsync(TimeSpan timeout)
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model)
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync()
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration()
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory)
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.KsqlContext..ctor(KsqlDslOptions options, ILoggerFactory loggerFactory)
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.TestContext..ctor()
-[xUnit.net 00:05:17.71]            at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()
-[xUnit.net 00:05:17.71]         --- End of stack trace from previous location ---
-[xUnit.net 00:05:17.71]   Finished:    Kafka.Ksql.Linq.Tests.Integration
+[xUnit.net 00:01:06.05]       System.InvalidOperationException : DDL execution failed for Bar: {"@type":"statement_error","error_code":40001,"message":"Schema for message keys on topic 'BAR_TBIMP_1S_FINAL' does not exist in the Schema Registry.\nSubject: BAR_TBIMP_1S_FINAL-key\nPossible causes include:\n- The topic itself does not exist\n\t-&gt; Use SHOW TOPICS; to check\n- Messages on the topic are not serialized using a format Schema Registry supports\n\t-&gt; Use PRINT 'BAR_TBIMP_1S_FINAL' FROM BEGINNING; to verify\n- Messages on the topic have not been serialized using a Confluent Schema Registry supported serializer\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html\n- The schema is registered on a different instance of the Schema Registry\n\t-&gt; Use the REST API to list available subjects\thttps://docs.confluent.io/current/schema-registry/docs/api.html#get--subjects\n- You do not have permissions to access the Schema Registry.\n\t-&gt; See https://docs.confluent.io/current/schema-registry/docs/security.html","statementText":"CREATE STREAM BAR_TBIMP_1S_FINAL_S WITH (KAFKA_TOPIC='BAR_TBIMP_1S_FINAL', KEY_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1, RETENTION_MS=604800000, VALUE_AVRO_SCHEMA_FULL_NAME='bar_tbimp_ksql.bar_tbimp_1s_final_s_valueAvro', VALUE_FORMAT='AVRO');","entities":[]}
+[xUnit.net 00:01:06.05]       Stack Trace:
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__ExecuteWithRetryAsync|2&gt;d.MoveNext()
+[xUnit.net 00:01:06.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.Query.Analysis.DerivedTumblingPipeline.RunAsync(TumblingQao qao, EntityModel baseModel, KsqlQueryModel queryModel, Func`3 execute, Func`2 resolveType, MappingRegistry mapping, ConcurrentDictionary`2 registry, ILogger logger)
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.&lt;&gt;c__DisplayClass95_0.&lt;&lt;EnsureQueryEntityDdlAsync&gt;g__EnsureDerivedQueryEntityDdlAsync|0&gt;d.MoveNext()
+[xUnit.net 00:01:06.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.EnsureQueryEntityDdlAsync(Type type, EntityModel model)
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.RegisterSchemasAndMaterializeAsync()
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.InitializeWithSchemaRegistration()
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext.InitializeCore(ILoggerFactory loggerFactory)
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.KsqlContext..ctor(KsqlDslOptions options, ILoggerFactory loggerFactory)
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.TestContext..ctor()
+[xUnit.net 00:01:06.05]            at Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket()
+[xUnit.net 00:01:06.05]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:06.06]   Finished:    Kafka.Ksql.Linq.Tests.Integration
 </StdOut>
     </Output>
     <RunInfos>
-      <RunInfo computerName="bc1b7d62b99d" outcome="Error" timestamp="2025-09-17T02:42:30.6689998+00:00">
-        <Text>[xUnit.net 00:05:17.71]     Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket [FAIL]</Text>
+      <RunInfo computerName="0f286a1a3111" outcome="Error" timestamp="2025-09-18T23:13:07.5226827+00:00">
+        <Text>[xUnit.net 00:01:06.05]     Kafka.Ksql.Linq.Tests.Integration.TimeBucketImportTumblingTests.Import_Ticks_Define_Tumbling_Query_Then_Extract_Bars_Via_TimeBucket [FAIL]</Text>
       </RunInfo>
     </RunInfos>
   </ResultSummary>

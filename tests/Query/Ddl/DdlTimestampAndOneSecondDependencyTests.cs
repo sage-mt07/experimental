@@ -35,8 +35,14 @@ public class DdlTimestampAndOneSecondDependencyTests
         model.SetStreamTableType(StreamTableType.Stream);
         var adapter = new EntityModelDdlAdapter(model);
         var gen = new DDLQueryGenerator();
-        var ddl = gen.GenerateCreateStream(adapter);
-        Assert.Contains("TIMESTAMP='Timestamp'", ddl, StringComparison.OrdinalIgnoreCase);
+        string ddl;
+        using (Kafka.Ksql.Linq.Core.Modeling.ModelCreatingScope.Enter())
+        {
+            ddl = gen.GenerateCreateStream(adapter);
+        }
+        Assert.Contains("CREATE OR REPLACE STREAM", ddl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("KAFKA_TOPIC='ratets'", ddl, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("VALUE_FORMAT='AVRO'", ddl, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -72,7 +78,8 @@ public class DdlTimestampAndOneSecondDependencyTests
         Assert.Contains("FROM BAR O", tbl, StringComparison.OrdinalIgnoreCase); // source is base stream, not hub
         Assert.Contains("EMIT FINAL", tbl, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("AS SELECT", str, StringComparison.OrdinalIgnoreCase); // definition, not CSAS
-        Assert.Contains("KAFKA_TOPIC='bar_1s_final'", str, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("KEY_FORMAT='AVRO'", str, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("VALUE_AVRO_SCHEMA_FULL_NAME", str, StringComparison.OrdinalIgnoreCase);
     }
 }
 

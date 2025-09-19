@@ -1,11 +1,14 @@
 using Kafka.Ksql.Linq.Core.Attributes;
 using Kafka.Ksql.Linq.Query.Dsl;
 using Kafka.Ksql.Linq.Query.Abstractions;
+using Kafka.Ksql.Linq.Query.Builders.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Kafka.Ksql.Linq.Query.Builders;
 
@@ -27,6 +30,7 @@ public static class KsqlCreateStatementBuilder
             throw new ArgumentNullException(nameof(model));
 
         var groupByClause = BuildGroupByClause(model.GroupByExpression, model.SourceTypes);
+        string? partitionClause = null;
 
         string selectClause;
         if (model.SelectProjection == null)
@@ -47,9 +51,45 @@ public static class KsqlCreateStatementBuilder
             selectClause = builder.Build(model.SelectProjection.Body);
         }
 
-        var fromClause = BuildFromClauseCore(model, sourceNameResolver);
+        var fromClause = BuildFromClauseCore(model, sourceNameResolver, out var aliasToSource);
         var whereClause = BuildWhereClause(model.WhereCondition, model);
         var havingClause = BuildHavingClause(model.HavingCondition);
+
+        var hasGroupBy = model.HasGroupBy();
+        var hasWindow = model.HasTumbling();
+        var hasEmitFinal = HasEmitFinal(model);
+        var sourceTypes = model.SourceTypes ?? Array.Empty<Type>();
+        var sourceIsStream = sourceTypes.Length > 0 && Array.TrueForAll(sourceTypes, t => !IsTableType(t));
+        var partitionMergedIntoGroupBy = false;
+
+        if (!string.IsNullOrWhiteSpace(partitionBy))
+        {
+            var normalizedPartition = NormalizePartitionClause(partitionBy);
+            var partitionColumns = ExtractPartitionColumnKeys(normalizedPartition);
+            if (partitionColumns.Count > 0)
+            {
+                var primaryType = sourceTypes.Length > 0 ? sourceTypes[0] : null;
+                var primaryKeys = primaryType != null
+                    ? ExtractKeyNames(primaryType)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var keysKnown = primaryKeys.Count > 0;
+                var partitionMatchesKey = keysKnown
+                    && partitionColumns.Count == primaryKeys.Count
+                    && partitionColumns.All(primaryKeys.Contains);
+
+                var singleSourceStream = sourceIsStream && sourceTypes.Length == 1;
+                if (singleSourceStream
+                    && !hasGroupBy
+                    && !hasWindow
+                    && !hasEmitFinal
+                    && (!partitionMatchesKey || !keysKnown))
+                {
+                    partitionClause = normalizedPartition;
+                }
+            }
+        }
+
+        var aliasMetadata = BuildAliasMetadata(aliasToSource, sourceTypes);
 
         var keyMap = BuildKeyAliasMap(model, options?.KeyPathStyle ?? KeyPathStyle.None);
         var mapForFrom = keyMap.Where(kv => kv.Value.Style != KeyPathStyle.None)
@@ -57,13 +97,30 @@ public static class KsqlCreateStatementBuilder
         fromClause = ApplyKeyStyle(fromClause, mapForFrom);
         selectClause = ApplyKeyStyle(selectClause, keyMap);
         groupByClause = ApplyKeyStyle(groupByClause, keyMap);
+        if (!string.IsNullOrWhiteSpace(partitionClause))
+            partitionClause = ApplyKeyStyle(partitionClause, keyMap);
         whereClause = ApplyKeyStyle(whereClause, keyMap);
         havingClause = ApplyKeyStyle(havingClause, keyMap);
 
-        var createType = model.DetermineType() == StreamTableType.Table ? "CREATE TABLE" : "CREATE STREAM";
+        DealiasClauses(aliasMetadata, ref selectClause, ref groupByClause, ref partitionClause, ref whereClause, ref havingClause);
+
+        if (!string.IsNullOrWhiteSpace(partitionClause))
+        {
+            partitionClause = DeduplicatePartitionColumns(partitionClause);
+        }
+
+        if (!string.IsNullOrWhiteSpace(partitionClause))
+        {
+            groupByClause = MergeGroupByAndPartition(groupByClause, partitionClause!, out partitionMergedIntoGroupBy);
+            partitionClause = null;
+        }
+
+        var createType = model.DetermineType() == StreamTableType.Table || partitionMergedIntoGroupBy
+            ? "CREATE TABLE"
+            : "CREATE STREAM";
 
         var sb = new StringBuilder();
-        sb.Append($"{createType} {streamName}");
+        sb.Append($"{createType} {streamName} ");
         // Emit AVRO formats. KEY_FORMAT はキー定義がある場合のみ付与する（キー無しだとエラーになる環境があるため）
         var withParts = new List<string> { $"KAFKA_TOPIC='{streamName}'", "VALUE_FORMAT='AVRO'" };
         if (AnySourceHasKeys(model))
@@ -89,11 +146,6 @@ public static class KsqlCreateStatementBuilder
             sb.AppendLine();
             sb.Append(havingClause);
         }
-        if (!string.IsNullOrEmpty(partitionBy))
-        {
-            sb.AppendLine();
-            sb.Append($"PARTITION BY {partitionBy}");
-        }
         sb.AppendLine();
         sb.Append("EMIT CHANGES;");
         return sb.ToString();
@@ -110,7 +162,7 @@ public static class KsqlCreateStatementBuilder
         return false;
     }
 
-    private static string BuildFromClauseCore(KsqlQueryModel model, Func<Type, string>? sourceNameResolver)
+    private static string BuildFromClauseCore(KsqlQueryModel model, Func<Type, string>? sourceNameResolver, out Dictionary<string, string> aliasToSource)
     {
         var types = model.SourceTypes;
         if (types == null || types.Length == 0)
@@ -120,14 +172,17 @@ public static class KsqlCreateStatementBuilder
             throw new NotSupportedException("Only up to 2 tables are supported in JOIN");
 
         var result = new StringBuilder();
+        aliasToSource = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var left = sourceNameResolver?.Invoke(types[0]) ?? ResolveSourceName(types[0]);
         var lAlias = "o"; // explicit alias for left source
+        aliasToSource[lAlias] = left;
         result.Append($"FROM {left} {lAlias}");
 
         if (types.Length > 1)
         {
             var right = sourceNameResolver?.Invoke(types[1]) ?? ResolveSourceName(types[1]);
             var rAlias = "i"; // explicit alias for right source
+            aliasToSource[rAlias] = right;
             result.Append($" JOIN {right} {rAlias}");
             if (model.JoinCondition == null)
                 throw new InvalidOperationException("Join condition required for two table join");
@@ -321,6 +376,355 @@ public static class KsqlCreateStatementBuilder
             }
         }
         return clause;
+    }
+
+    private static bool HasEmitFinal(KsqlQueryModel model)
+    {
+        if (model.Extras != null && model.Extras.TryGetValue("emit", out var emitValue))
+        {
+            if (emitValue is string emitString && emitString.IndexOf("FINAL", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsTableType(Type type)
+    {
+        return type.GetCustomAttributes(typeof(KsqlTableAttribute), inherit: true).Length > 0;
+    }
+
+    private static string NormalizePartitionClause(string partitionClause)
+    {
+        if (string.IsNullOrWhiteSpace(partitionClause))
+            return partitionClause;
+
+        var parts = partitionClause.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return string.Join(", ", parts);
+    }
+
+    private static List<string> ExtractPartitionColumnKeys(string partitionClause)
+    {
+        var keys = new List<string>();
+        if (string.IsNullOrWhiteSpace(partitionClause))
+            return keys;
+
+        var parts = partitionClause.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            var trimmed = part.Trim();
+            if (trimmed.Length == 0)
+                continue;
+
+            var unqualified = ExtractUnqualifiedIdentifier(trimmed);
+            var normalized = NormalizeIdentifierForComparison(unqualified);
+            if (!string.IsNullOrEmpty(normalized))
+                keys.Add(normalized);
+        }
+
+        return keys;
+    }
+
+    private static string DeduplicatePartitionColumns(string partitionClause)
+    {
+        if (string.IsNullOrWhiteSpace(partitionClause))
+            return partitionClause;
+
+        var parts = partitionClause.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var tokens = new List<(string Original, string Unqualified, string Normalized, string Qualifier, int Index)>();
+        for (int i = 0; i < parts.Length; i++)
+        {
+            var trimmed = parts[i].Trim();
+            if (trimmed.Length == 0)
+                continue;
+
+            var unqualified = ExtractUnqualifiedIdentifier(trimmed);
+            if (string.IsNullOrEmpty(unqualified))
+                continue;
+
+            var normalized = NormalizeIdentifierForComparison(unqualified);
+            if (string.IsNullOrEmpty(normalized))
+                continue;
+
+            var qualifier = ExtractQualifier(trimmed);
+
+            tokens.Add((trimmed, unqualified, normalized, qualifier, i));
+        }
+
+        if (tokens.Count == 0)
+            return string.Empty;
+
+        var ordered = tokens
+            .OrderBy(t => t.Normalized, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(t => t.Qualifier, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(t => t.Index)
+            .ToList();
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>();
+        foreach (var token in ordered)
+        {
+            var key = BuildDedupKey(token.Normalized, token.Qualifier);
+            if (seen.Add(key))
+            {
+                result.Add(string.IsNullOrEmpty(token.Qualifier) ? token.Unqualified : token.Original);
+            }
+        }
+
+        return string.Join(", ", result);
+    }
+
+    private static string MergeGroupByAndPartition(string groupByClause, string partitionColumns, out bool merged)
+    {
+        merged = false;
+        if (string.IsNullOrWhiteSpace(partitionColumns))
+            return groupByClause;
+
+        var groupColumns = ExtractGroupByColumns(groupByClause);
+        var known = new HashSet<string>(groupColumns.Select(c => NormalizeGroupByKey(c)), StringComparer.OrdinalIgnoreCase);
+
+        var partitionList = ExtractColumns(partitionColumns);
+        foreach (var column in partitionList)
+        {
+            var key = NormalizeGroupByKey(column);
+            if (known.Add(key))
+                groupColumns.Add(column.Trim());
+        }
+
+        merged = partitionList.Count > 0;
+        if (groupColumns.Count == 0)
+            return string.Empty;
+
+        return "GROUP BY " + string.Join(", ", groupColumns);
+    }
+
+    private static void DealiasClauses(Dictionary<string, SourceAliasMetadata> aliasMetadata, ref string selectClause, ref string groupByClause, ref string? partitionClause, ref string whereClause, ref string havingClause)
+    {
+        if (aliasMetadata == null || aliasMetadata.Count == 0)
+            return;
+
+        var ambiguousColumns = DetermineAmbiguousColumns(aliasMetadata.Values);
+
+        selectClause = ApplyAliasPreferences(selectClause, aliasMetadata, ambiguousColumns);
+        groupByClause = ApplyAliasPreferences(groupByClause, aliasMetadata, ambiguousColumns);
+        if (!string.IsNullOrWhiteSpace(partitionClause))
+            partitionClause = ApplyAliasPreferences(partitionClause!, aliasMetadata, ambiguousColumns);
+        whereClause = ApplyAliasPreferences(whereClause, aliasMetadata, ambiguousColumns);
+        havingClause = ApplyAliasPreferences(havingClause, aliasMetadata, ambiguousColumns);
+    }
+
+    private static string ApplyAliasPreferences(string clause, Dictionary<string, SourceAliasMetadata> aliasMetadata, HashSet<string> ambiguousColumns)
+    {
+        if (string.IsNullOrWhiteSpace(clause))
+            return clause;
+
+        foreach (var metadata in aliasMetadata.Values)
+        {
+            clause = ReplaceAliasWithPreferredScope(clause, metadata, ambiguousColumns);
+        }
+
+        return clause;
+    }
+
+    private static string ReplaceAliasWithPreferredScope(string clause, SourceAliasMetadata metadata, HashSet<string> ambiguousColumns)
+    {
+        if (string.IsNullOrWhiteSpace(clause))
+            return clause;
+
+        var aliasPattern = Regex.Escape(metadata.Alias);
+
+        clause = ReplaceAliasPattern(clause, $@"\b{aliasPattern}\.\`(?<column>[A-Za-z0-9_]+)\`", metadata, ambiguousColumns, '`');
+        clause = ReplaceAliasPattern(clause, $@"\b{aliasPattern}\.""(?<column>[A-Za-z0-9_]+)""", metadata, ambiguousColumns, '"');
+        clause = ReplaceAliasPattern(clause, $@"\b{aliasPattern}\.(?<column>[A-Za-z0-9_]+)", metadata, ambiguousColumns, null);
+
+        return clause;
+    }
+
+    private static string ReplaceAliasPattern(string clause, string pattern, SourceAliasMetadata metadata, HashSet<string> ambiguousColumns, char? quote)
+    {
+        return Regex.Replace(clause, pattern, match =>
+        {
+            var column = match.Groups["column"].Value;
+            var normalized = NormalizeIdentifierForComparison(column);
+            var columnWithQuote = quote switch
+            {
+                '`' => $"`{column}`",
+                '"' => $"\"{column}\"",
+                _ => column
+            };
+
+            if (ambiguousColumns.Contains(normalized))
+                return $"{metadata.SourceName}.{columnWithQuote}";
+
+            return columnWithQuote;
+        }, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
+    private static HashSet<string> DetermineAmbiguousColumns(IEnumerable<SourceAliasMetadata> aliasMetadata)
+    {
+        var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var metadata in aliasMetadata)
+        {
+            foreach (var column in metadata.ColumnIdentifiers)
+            {
+                if (string.IsNullOrEmpty(column))
+                    continue;
+
+                counts[column] = counts.TryGetValue(column, out var existing) ? existing + 1 : 1;
+            }
+        }
+
+        return counts
+            .Where(kv => kv.Value > 1)
+            .Select(kv => kv.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string ExtractUnqualifiedIdentifier(string expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+            return string.Empty;
+
+        var value = expression.Trim();
+        var arrowIndex = value.LastIndexOf("->");
+        if (arrowIndex >= 0)
+            value = value[(arrowIndex + 2)..];
+
+        var dotIndex = value.LastIndexOf('.');
+        if (dotIndex >= 0)
+            value = value[(dotIndex + 1)..];
+
+        return value.Trim();
+    }
+
+    private static string NormalizeIdentifierForComparison(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            return string.Empty;
+
+        var value = identifier.Trim();
+        if (value.EndsWith("()"))
+            value = value[..^2];
+
+        if (value.Length >= 2 && ((value[0] == '`' && value[^1] == '`') || (value[0] == '"' && value[^1] == '"')))
+            value = value[1..^1];
+
+        return value.ToUpperInvariant();
+    }
+
+    private static List<string> ExtractGroupByColumns(string groupByClause)
+    {
+        if (string.IsNullOrWhiteSpace(groupByClause))
+            return new List<string>();
+
+        var value = groupByClause.Trim();
+        if (value.StartsWith("GROUP BY", StringComparison.OrdinalIgnoreCase))
+            value = value.Substring("GROUP BY".Length).Trim();
+
+        return ExtractColumns(value);
+    }
+
+    private static List<string> ExtractColumns(string columns)
+    {
+        if (string.IsNullOrWhiteSpace(columns))
+            return new List<string>();
+
+        return columns
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(c => c.Trim())
+            .Where(c => c.Length > 0)
+            .ToList();
+    }
+
+    private static string NormalizeGroupByKey(string column)
+    {
+        return NormalizeIdentifierForComparison(ExtractUnqualifiedIdentifier(column));
+    }
+
+    private static string ExtractQualifier(string expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+            return string.Empty;
+
+        var value = expression.Trim();
+        var arrowIndex = value.LastIndexOf("->");
+        if (arrowIndex >= 0)
+        {
+            var qualifier = value[..arrowIndex];
+            return qualifier.Trim();
+        }
+
+        var dotIndex = value.LastIndexOf('.');
+        if (dotIndex >= 0)
+        {
+            var qualifier = value[..dotIndex];
+            return qualifier.Trim();
+        }
+
+        return string.Empty;
+    }
+
+    private static string BuildDedupKey(string normalized, string qualifier)
+    {
+        if (string.IsNullOrEmpty(qualifier))
+            return normalized;
+
+        return qualifier.ToUpperInvariant() + "::" + normalized;
+    }
+
+    private static Dictionary<string, SourceAliasMetadata> BuildAliasMetadata(Dictionary<string, string> aliasToSource, Type[] sourceTypes)
+    {
+        var map = new Dictionary<string, SourceAliasMetadata>(StringComparer.OrdinalIgnoreCase);
+        if (aliasToSource == null || aliasToSource.Count == 0)
+            return map;
+
+        foreach (var kv in aliasToSource)
+        {
+            var alias = kv.Key;
+            var sourceName = kv.Value;
+            var sourceType = alias switch
+            {
+                "o" => sourceTypes.Length > 0 ? sourceTypes[0] : null,
+                "i" => sourceTypes.Length > 1 ? sourceTypes[1] : null,
+                _ => null
+            };
+
+            map[alias] = new SourceAliasMetadata(alias, sourceName, sourceType);
+        }
+
+        return map;
+    }
+
+    private static HashSet<string> ExtractColumnIdentifiers(Type? type)
+    {
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (type == null)
+            return set;
+
+        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            var sanitized = KsqlNameUtils.Sanitize(property.Name);
+            var normalized = NormalizeIdentifierForComparison(sanitized);
+            if (!string.IsNullOrEmpty(normalized))
+                set.Add(normalized);
+        }
+
+        return set;
+    }
+
+    private sealed class SourceAliasMetadata
+    {
+        public SourceAliasMetadata(string alias, string sourceName, Type? sourceType)
+        {
+            Alias = alias;
+            SourceName = sourceName;
+            SourceType = sourceType;
+            ColumnIdentifiers = ExtractColumnIdentifiers(sourceType);
+        }
+
+        public string Alias { get; }
+        public string SourceName { get; }
+        public Type? SourceType { get; }
+        public HashSet<string> ColumnIdentifiers { get; }
     }
 
     private static string FormatTimeSpan(TimeSpan timeSpan)

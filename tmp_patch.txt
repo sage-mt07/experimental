@@ -1,54 +1,172 @@
 *** Begin Patch
 *** Update File: src/Query/Analysis/DerivedTumblingPipeline.cs
 @@
--    public static async Task RunAsync(
-+    public sealed record ExecutionResult(
-+        EntityModel Model,
-+        Role Role,
-+        string Statement,
-+        KsqlDbResponse Response,
-+        string? InputTopic)
-+    {
-+        public bool HasPersistentQuery => Statement?.IndexOf(" AS ", StringComparison.OrdinalIgnoreCase) >= 0;
-+    }
+-        else if (role == Role.Final1sStream)
+-
+-        {
+-
+-            // ksqlDB limitation: persistent queries cannot source from windowed TABLEs.
+-
+-            // Define a logical STREAM over the 1s TABLE's Kafka topic with explicit columns so keys are resolvable.
+-
+-            var table1s = $"{baseName}_1s_final";
+-
+-            // Build columns from AdditionalSettings (shapes captured earlier)
+-
+-            var keyNames = model.AdditionalSettings.TryGetValue("keys", out var kObj) && kObj is string[] ks ? ks : Array.Empty<string>();
+-
+-            var keyTypes = model.AdditionalSettings.TryGetValue("keys/types", out var ktObj) && ktObj is Type[] kts ? kts : Array.Empty<Type>();
+-
+-            var valNames = model.AdditionalSettings.TryGetValue("projection", out var pObj) && pObj is string[] vs ? vs : Array.Empty<string>();
+-
+-            var valTypes = model.AdditionalSettings.TryGetValue("projection/types", out var vtObj) && vtObj is Type[] vts ? vts : Array.Empty<Type>();
+-
+-            static string Map(Type t) => Query.Schema.KsqlTypeMapping.MapToKsqlType(t, null);
+-
+-            var cols = new System.Collections.Generic.List<string>();
+-
+-            for (int i = 0; i < keyNames.Length && i < keyTypes.Length; i++)
+-
+-                cols.Add($"{keyNames[i].ToUpperInvariant()} {Map(keyTypes[i])} KEY");
+-
+-            for (int i = 0; i < valNames.Length && i < valTypes.Length; i++)
+-
+-            {
+-
+-                var n = valNames[i].ToUpperInvariant();
+-
+-                if (keyNames.Any(k => string.Equals(k, valNames[i], StringComparison.OrdinalIgnoreCase)))
+-
+-                    continue;
+-
+-                cols.Add($"{n} {Map(valTypes[i])}");
+-
+-            }
+-
+-            var colList = string.Join(", ", cols);
+-
+-            // Include PARTITIONS/REPLICAS so the KAFKA_TOPIC is created if missing (first run ordering tolerance)
+-
+-            ddl = $"CREATE STREAM {name} ({colList}) WITH (KAFKA_TOPIC='{table1s}', KEY_FORMAT='AVRO', VALUE_FORMAT='AVRO', PARTITIONS=1, REPLICAS=1);";
+-
+-        }
++        else if (role == Role.Final1sStream)
 +
-+    public static async Task<List<ExecutionResult>> RunAsync(
-         TumblingQao qao,
-         EntityModel baseModel,
-         KsqlQueryModel queryModel,
--        Func<string, Task> execute,
-+        Func<string, Task<KsqlDbResponse>> execute,
-         Func<string, Type> resolveType,
-         MappingRegistry mapping,
-         ConcurrentDictionary<Type, EntityModel> registry,
-         ILogger logger)
-     {
-+        var executions = new List<ExecutionResult>();
-         var baseAttr = baseModel.EntityType.GetCustomAttribute<KsqlTopicAttribute>();
-         var baseName = (baseAttr?.Name ?? baseModel.TopicName ?? baseModel.EntityType.Name).ToLowerInvariant();
-         var entities = PlanDerivedEntities(qao, baseModel, queryModel.WhenEmptyFiller != null);
-         var models = AdaptModels(entities);
-@@
--            var (ddl, dt, ns) = BuildDdlAndRegister(baseName, queryModel, m, role, resolveType);
-+            var (ddl, dt, ns) = BuildDdlAndRegister(baseName, queryModel, m, role, resolveType);
-@@
--            await execute(ddl);
-+            var response = await execute(ddl);
-+            executions.Add(new ExecutionResult(m, role, ddl, response, inputOverride));
-             // Register mapping using explicit shapes captured in AdditionalSettings
-             try
-             {
-@@
-         var dt = resolveType(name);
-         model.EntityType = dt;
-         model.TopicName = name;
-         model.SetStreamTableType(qm.DetermineType());
-         var ns = model.AdditionalSettings.TryGetValue("namespace", out var nsObj) ? nsObj?.ToString() : null;
--        return (ddl, dt, ns);
-+        return (ddl, dt, ns);
-     }
-@@
--    }
-+        return executions;
-+    }
++        {
++
++            // Materialize a non-windowed STREAM from the windowed 1s TABLE by re-partitioning on keys + WindowStart.
++
++            var table1s = $"{baseName}_1s_final";
++
++            var keyNames = model.AdditionalSettings.TryGetValue("keys", out var kObj) && kObj is string[] ks ? ks : Array.Empty<string>();
++
++            var valNames = model.AdditionalSettings.TryGetValue("projection", out var pObj) && pObj is string[] vs ? vs : Array.Empty<string>();
++
++            var bucketColumn = inferredBucket ?? throw new InvalidOperationException("Final stream requires WindowStart() projection to define the bucket column.");
++
++            var selectParts = new System.Collections.Generic.List<string>();
++
++            var partitionParts = new System.Collections.Generic.List<string>();
++
++            static bool EqualsOrdinal(string a, string b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
++
++            bool bucketAdded = false;
++
++            foreach (var key in keyNames)
++
++            {
++
++                if (string.IsNullOrWhiteSpace(key)) continue;
++
++                if (EqualsOrdinal(key, bucketColumn))
++
++                {
++
++                    selectParts.Add($"  WINDOWSTART() AS {key}");
++
++                    partitionParts.Add("WINDOWSTART()");
++
++                    bucketAdded = true;
++
++                }
++
++                else
++
++                {
++
++                    selectParts.Add($"  {key}");
++
++                    partitionParts.Add(key);
++
++                }
++
++            }
++
++            if (!bucketAdded && !string.IsNullOrWhiteSpace(bucketColumn))
++
++            {
++
++                selectParts.Add($"  WINDOWSTART() AS {bucketColumn}");
++
++                partitionParts.Add("WINDOWSTART()");
++
++                bucketAdded = true;
++
++            }
++
++            foreach (var col in valNames)
++
++            {
++
++                if (string.IsNullOrWhiteSpace(col)) continue;
++
++                if (keyNames.Any(k => EqualsOrdinal(k, col))) continue;
++
++                if (!bucketAdded && EqualsOrdinal(col, bucketColumn))
++
++                {
++
++                    selectParts.Add($"  WINDOWSTART() AS {col}");
++
++                    bucketAdded = true;
++
++                    continue;
++
++                }
++
++                selectParts.Add($"  {col}");
++
++            }
++
++            if (selectParts.Count == 0)
++
++                throw new InvalidOperationException("Final stream requires projection columns.");
++
++            if (partitionParts.Count == 0)
++
++                partitionParts.Add("WINDOWSTART()");
++
++            var sb = new System.Text.StringBuilder();
++
++            sb.AppendLine($"CREATE STREAM {name} WITH (");
++
++            sb.AppendLine("  KEY_FORMAT='AVRO',");
++
++            sb.AppendLine("  VALUE_FORMAT='AVRO'");
++
++            sb.AppendLine(") AS");
++
++            sb.AppendLine("SELECT");
++
++            sb.AppendLine(string.Join(",\n", selectParts));
++
++            sb.AppendLine($"FROM {table1s}");
++
++            sb.AppendLine($"PARTITION BY {string.Join(", ", partitionParts)}");
++
++            sb.AppendLine("EMIT CHANGES;");
++
++            ddl = sb.ToString();
++
++        }
 *** End Patch
