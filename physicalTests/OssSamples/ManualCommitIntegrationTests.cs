@@ -2,6 +2,10 @@ using Kafka.Ksql.Linq.Configuration;
 using Confluent.Kafka;
 using Kafka.Ksql.Linq.Core.Configuration;
 using Xunit;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using System.Collections.Generic;
 
 #nullable enable
 

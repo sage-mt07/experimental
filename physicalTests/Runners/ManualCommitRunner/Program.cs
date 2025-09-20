@@ -4,6 +4,11 @@ using Kafka.Ksql.Linq.Core.Abstractions;
 using Kafka.Ksql.Linq.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Confluent.Kafka;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 // Manual-commit physical test runner (no test framework)
 

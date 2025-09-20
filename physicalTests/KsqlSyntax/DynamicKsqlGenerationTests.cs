@@ -6,8 +6,13 @@ using Kafka.Ksql.Linq.Core.Modeling;
 using Kafka.Ksql.Linq.Query.Abstractions;
 using Kafka.Ksql.Linq.Query.Ddl;
 using Kafka.Ksql.Linq.Query.Pipeline;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;
 

@@ -1,4 +1,7 @@
 using Confluent.Kafka;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace PhysicalTestEnv;
 

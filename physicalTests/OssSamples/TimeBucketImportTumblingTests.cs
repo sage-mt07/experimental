@@ -7,6 +7,11 @@ using Kafka.Ksql.Linq.Core.Attributes;
 using Kafka.Ksql.Linq.Core.Modeling;
 using Kafka.Ksql.Linq.Query.Dsl;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;

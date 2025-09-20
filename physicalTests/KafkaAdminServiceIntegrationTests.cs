@@ -5,6 +5,8 @@ using Kafka.Ksql.Linq.Infrastructure.Admin;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using PhysicalTestEnv;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;

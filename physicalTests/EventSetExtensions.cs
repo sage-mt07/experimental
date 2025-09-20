@@ -3,6 +3,9 @@ using Kafka.Ksql.Linq.Core.Abstractions;
 
 #nullable enable
 using System.Reflection;
+using System.Threading.Tasks;
+using System;
+using System.Threading;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;
 

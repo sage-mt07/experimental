@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.10
+    image: confluentinc/cp-zookeeper:7.9.2
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -9,11 +9,13 @@ services:
       - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:7.4.10
+    image: confluentinc/cp-kafka:7.9.2
     depends_on:
       - zookeeper
     ports:
       - "39092:39092"     # host access for tests
+    mem_limit: 10g
+    memswap_limit: 10g
     environment:
       KAFKA_HEAP_OPTS: "-Xms1g -Xmx2g"
       KAFKA_BROKER_ID: 1
@@ -41,16 +43,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
 
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:7.4.10
+    image: confluentinc/cp-ksqldb-server:7.9.2
     depends_on:
       kafka:
         condition: service_healthy
     ports:
       - "18088:8088"
-    mem_limit: 6g
-    memswap_limit: 6g      
+    mem_limit: 12g
+    memswap_limit: 12g      
     environment:
       KSQL_CONFIG_DIR: "/etc/ksql"
       KSQL_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:29092"
@@ -158,26 +163,30 @@ services:
       start_period: 90s
         
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.4.10
+    image: confluentinc/cp-schema-registry:7.9.2
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
       - kafka
     ports:
       - "18081:8081"
+    mem_limit: 4g
+    memswap_limit: 4g
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_HEAP_OPTS: "-Xms512m -Xmx2g"
 
   ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:7.4.10
+    image: confluentinc/cp-ksqldb-cli:7.9.2
     depends_on:
       ksqldb-server:
         condition: service_healthy
     entrypoint: /bin/sh
     tty: true
 
+
+    
   runner:
     image: mcr.microsoft.com/dotnet/sdk:8.0
     depends_on:
@@ -190,6 +199,8 @@ services:
     working_dir: /src
     volumes:
       - ../:/src
+    mem_limit: 8g
+    memswap_limit: 8g
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SCHEMA_REGISTRY_URL: http://schema-registry:8081
@@ -202,3 +213,7 @@ services:
       KSQL_QUERY_RUNNING_STABILITY_WINDOW_SECONDS: 15
     entrypoint: ["/bin/sh","-lc","/src/physicalTests/Runners/runner-entrypoint.sh"]
 
+volumes:
+  kafka_data:
+    external: false    
+    

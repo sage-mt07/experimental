@@ -11,6 +11,10 @@ using Confluent.Kafka.Admin;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;
 

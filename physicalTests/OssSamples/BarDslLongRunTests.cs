@@ -10,6 +10,11 @@ using System.Text.Json;
 using System.Net.Http;
 using System.Text;
 using Xunit;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kafka.Ksql.Linq.Tests.Integration;
 
